@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+{% block title %}قواعد توزيع التكاليف - نظام الحسابات المصري{% endblock %}
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h2>⚙️ قواعد توزيع التكاليف</h2>
+        <a href="{% url 'allocation_rule_create' %}" class="btn btn-primary">+ إضافة قاعدة</a>
+    </div>
+    
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>الاسم</th>
+                    <th>نوع المصدر</th>
+                    <th>طريقة التوزيع</th>
+                    <th>الدورية</th>
+                    <th>الحالة</th>
+                    <th>آخر تشغيل</th>
+                    <th>الإجراءات</th>
+                   </tr>
+            </thead>
+            <tbody>
+                {% for rule in rules %}
+                 <tr>
+                    <td><strong>{{ rule.name }}</strong></td>
+                    <td>{{ rule.get_source_type_display|default:rule.source_type }}</td>
+                    <td>{{ rule.get_method_display }}</td>
+                    <td>{{ rule.get_frequency_display }}</td>
+                    <td>
+                        {% if rule.is_active %}
+                            <span class="badge badge-success">نشطة</span>
+                        {% else %}
+                            <span class="badge badge-secondary">غير نشطة</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ rule.last_run_at|date:"Y-m-d H:i"|default:"-" }}</td>
+                    <td>
+                        <a href="{% url 'run_allocation_rule' rule.id %}" class="btn btn-success btn-sm" onclick="return confirm('هل أنت متأكد من تنفيذ هذه القاعدة؟')">▶️ تشغيل</a>
+                        <a href="{% url 'allocation_rule_update' rule.id %}" class="btn btn-warning btn-sm">✏️</a>
+                        <a href="{% url 'allocation_rule_delete' rule.id %}" class="btn btn-danger btn-sm" onclick="return confirm('هل أنت متأكد؟')">🗑️</a>
+                    </td>
+                 </tr>
+                {% empty %}
+                 <tr>
+                    <td colspan="7" style="text-align: center;">لا توجد قواعد توزيع</td>
+                 </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

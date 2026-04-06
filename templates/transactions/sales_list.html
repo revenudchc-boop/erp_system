@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+{% block title %}فواتير المبيعات - نظام الحسابات المصري{% endblock %}
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h2>📊 فواتير المبيعات</h2>
+        <a href="{% url 'sales_create' %}" class="btn btn-primary">+ فاتورة مبيعات جديدة</a>
+    </div>
+    
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>رقم الفاتورة</th>
+                    <th>التاريخ</th>
+                    <th>العميل</th>
+                    <th>المستودع</th>
+                    <th>الحالة</th>
+                    <th>تاريخ الترحيل</th>
+                    <th>الإجراءات</th>
+                 </thead>
+            <tbody>
+                {% for sale in sales %}
+                <tr>
+                    <td><strong>{{ sale.invoice_number }}</strong></td>
+                    <td>{{ sale.date|date:"Y-m-d" }}</td>
+                    <td>{{ sale.customer.name }}</td>
+                    <td>{{ sale.warehouse.name|default:"-" }}</td>
+                    <td>
+                        {% if sale.status == 'posted' %}
+                            <span class="badge badge-success">مرحل</span>
+                        {% elif sale.status == 'draft' %}
+                            <span class="badge badge-warning">مسودة</span>
+                        {% else %}
+                            <span class="badge badge-danger">ملغي</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ sale.journal_entry.posted_at|date:"Y-m-d H:i"|default:"-" }}</td>
+                    <td>
+                        {% if sale.status == 'draft' %}
+                            <a href="{% url 'sales_post' sale.id %}" class="btn btn-success btn-sm" onclick="return confirm('هل أنت متأكد من ترحيل هذه الفاتورة؟')">✅ ترحيل</a>
+                            <a href="{% url 'sales_update' sale.id %}" class="btn btn-warning btn-sm">✏️ تعديل</a>
+                            <a href="{% url 'sales_delete' sale.id %}" class="btn btn-danger btn-sm" onclick="return confirm('هل أنت متأكد من حذف هذه الفاتورة؟')">🗑️ حذف</a>
+                        {% elif sale.status == 'posted' %}
+                            <a href="{% url 'sales_unpost' sale.id %}" class="btn btn-warning btn-sm" onclick="return confirm('⚠️ تحذير: إلغاء الترحيل سيعيد الفاتورة إلى حالة المسودة. هل أنت متأكد؟')">↩️ إلغاء الترحيل</a>
+                            {% if sale.journal_entry %}
+                                <a href="{% url 'journal_entry_detail' sale.journal_entry.id %}" class="btn btn-info btn-sm" target="_blank">👁️ معاينة القيد</a>
+                                <button onclick="printJournalEntry({{ sale.journal_entry.id }})" class="btn btn-secondary btn-sm">🖨️ طباعة</button>
+                            {% endif %}
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" style="text-align: center;">لا توجد فواتير مبيعات</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+function printJournalEntry(entryId) {
+    const printWindow = window.open(`/api/journal/entry/${entryId}/print/`, '_blank');
+    printWindow.focus();
+}
+</script>
+{% endblock %}

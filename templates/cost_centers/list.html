@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+{% block title %}مراكز التكلفة - نظام الحسابات المصري{% endblock %}
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h2>🎯 مراكز التكلفة</h2>
+        <a href="{% url 'cost_center_create' %}" class="btn btn-primary">+ إضافة مركز تكلفة</a>
+    </div>
+    
+    <div id="centers-tree">
+        <div style="text-align: center; padding: 40px;">جاري تحميل مراكز التكلفة...</div>
+    </div>
+</div>
+
+<script>
+async function loadCentersTree() {
+    try {
+        const response = await fetch('/cost-centers/centers/tree/');
+        const data = await response.json();
+        console.log('Data received:', data); // للتأكد من وصول البيانات
+        renderTree(data);
+    } catch (error) {
+        console.error('Error:', error);
+        document.getElementById('centers-tree').innerHTML = '<div style="text-align: center; padding: 40px; color: red;">حدث خطأ في تحميل البيانات: ' + error.message + '</div>';
+    }
+}
+
+function renderTree(centers, container = document.getElementById('centers-tree'), level = 0) {
+    if (!centers || centers.length === 0) {
+        container.innerHTML = '<div style="text-align: center; padding: 40px;">لا توجد مراكز تكلفة</div>';
+        return;
+    }
+    
+    const ul = document.createElement('ul');
+    ul.style.listStyle = 'none';
+    ul.style.paddingRight = '20px';
+    ul.style.margin = '0';
+    
+    for (const center of centers) {
+        const li = document.createElement('li');
+        li.style.margin = '8px 0';
+        li.style.padding = '5px 10px';
+        li.style.borderRadius = '6px';
+        li.style.backgroundColor = level % 2 === 0 ? '#f8f9fa' : 'white';
+        
+        const hasChildren = center.children && center.children.length > 0;
+        const icon = hasChildren ? '📁' : '🎯';
+        
+        li.innerHTML = `
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="font-weight: bold; color: #1e3c72;">
+                    ${icon} ${center.code} - ${center.name}
+                    <span style="font-size: 12px; color: #666; margin-right: 10px;">(${center.type === 'operational' ? 'تشغيلي' : center.type === 'support' ? 'دعم' : center.type === 'investment' ? 'استثماري' : center.type})</span>
+                    <span style="font-size: 12px; color: #28a745;">الميزانية: ${center.budget} جنيه</span>
+                </span>
+                <div>
+                    <a href="/cost-centers/centers/${center.id}/update/" class="btn btn-warning btn-sm" style="padding: 3px 10px; font-size: 12px;">✏️</a>
+                    <a href="/cost-centers/centers/${center.id}/delete/" class="btn btn-danger btn-sm" style="padding: 3px 10px; font-size: 12px;" onclick="return confirm('هل أنت متأكد؟')">🗑️</a>
+                </div>
+            </div>
+        `;
+        
+        if (hasChildren) {
+            renderTree(center.children, li, level + 1);
+        }
+        ul.appendChild(li);
+    }
+    
+    container.innerHTML = '';
+    container.appendChild(ul);
+}
+
+// تحميل البيانات عند فتح الصفحة
+document.addEventListener('DOMContentLoaded', loadCentersTree);
+</script>
+{% endblock %}

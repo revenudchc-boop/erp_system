@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+{% block title %}تقرير مراكز التكلفة - نظام الحسابات المصري{% endblock %}
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h2>📊 تقرير مراكز التكلفة</h2>
+    </div>
+    
+    <form method="get" style="display: flex; gap: 15px; align-items: flex-end; margin-bottom: 25px; flex-wrap: wrap;">
+        <div class="form-group" style="margin-bottom: 0;">
+            <label>السنة:</label>
+            <input type="number" name="year" value="{{ year|default:2025 }}" style="width: 100px;">
+        </div>
+        <div class="form-group" style="margin-bottom: 0;">
+            <label>الشهر:</label>
+            <input type="number" name="month" value="{{ month|default:3 }}" min="1" max="12" style="width: 80px;">
+        </div>
+        <button type="submit" class="btn btn-primary">عرض التقرير</button>
+    </form>
+    
+    {% if result %}
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>الكود</th>
+                    <th>اسم المركز</th>
+                    <th>النوع</th>
+                    <th>الميزانية</th>
+                    <th>التكلفة الفعلية</th>
+                    <th>الفرق</th>
+                    <th>نسبة الإنجاز</th>
+                 </tr>
+            </thead>
+            <tbody>
+                {% for item in result %}
+                 <tr>
+                    <td><strong>{{ item.code }}</strong></td>
+                    <td>{{ item.name }}</td>
+                    <td>{{ item.type }}</td>
+                    <td>{{ item.budget|floatformat:2 }}</td>
+                    <td>{{ item.actual|floatformat:2 }}</td>
+                    <td style="{% if item.variance >= 0 %}color: #28a745;{% else %}color: #dc3545;{% endif %}">
+                        {{ item.variance|floatformat:2 }}
+                    </td>
+                    <td>
+                        {% if item.budget > 0 %}
+                            {{ item.actual|floatformat:2 }} / {{ item.budget|floatformat:2 }}
+                        {% else %}
+                            -
+                        {% endif %}
+                    </td>
+                 </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+        {% if year and month %}
+        <div style="text-align: center; padding: 40px;">لا توجد بيانات في هذه الفترة</div>
+        {% endif %}
+    {% endif %}
+</div>
+{% endblock %}

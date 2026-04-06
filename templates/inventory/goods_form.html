@@ -1,0 +1,112 @@
+{% extends 'base.html' %}
+{% block title %}{{ title }} - نظام الحسابات المصري{% endblock %}
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h2>{{ title }}</h2>
+        <a href="{% url 'goods_list' %}" class="btn btn-secondary">← رجوع</a>
+    </div>
+    
+    <form method="post">
+        {% csrf_token %}
+        
+        <div class="form-row">
+            <div class="form-group">
+                <label>كود السلعة *</label>
+                <input type="text" name="code" value="{{ product.code|default:'' }}" required placeholder="مثال: G001">
+            </div>
+            <div class="form-group">
+                <label>الباركود</label>
+                <input type="text" name="barcode" value="{{ product.barcode|default:'' }}" placeholder="رمز الباركود">
+            </div>
+        </div>
+        
+        <div class="form-row">
+            <div class="form-group">
+                <label>الاسم بالعربية *</label>
+                <input type="text" name="name_ar" value="{{ product.name_ar|default:'' }}" required placeholder="مثال: لابتوب">
+            </div>
+            <div class="form-group">
+                <label>الاسم بالإنجليزية</label>
+                <input type="text" name="name_en" value="{{ product.name_en|default:'' }}" placeholder="مثال: Laptop">
+            </div>
+        </div>
+        
+        <div class="form-row">
+            <div class="form-group">
+                <label>الفئة</label>
+                <select name="category">
+                    <option value="">-- بدون فئة --</option>
+                    {% for cat in categories %}
+                    <option value="{{ cat.id }}" {% if product.category_id == cat.id %}selected{% endif %}>{{ cat.code }} - {{ cat.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label>وحدة القياس *</label>
+                <input type="text" name="unit" value="{{ product.unit|default:'قطعة' }}" required placeholder="مثال: قطعة، كيلو، متر">
+            </div>
+        </div>
+        
+        <div class="form-row">
+            <div class="form-group">
+                <label>طريقة التقييم</label>
+                <select name="valuation_method">
+                    <option value="weighted_average" {% if product.valuation_method == 'weighted_average' %}selected{% endif %}>المتوسط المرجح</option>
+                    <option value="fifo" {% if product.valuation_method == 'fifo' %}selected{% endif %}>FIFO (أول داخل أول خارج)</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>نسبة الضريبة (%)</label>
+                <input type="number" name="vat_rate" step="0.01" value="{{ product.vat_rate|default:14 }}">
+            </div>
+        </div>
+        
+        <div class="form-row">
+            <div class="form-group">
+                <label>سعر الشراء</label>
+                <input type="number" name="purchase_price" step="0.01" value="{{ product.purchase_price|default:0 }}">
+            </div>
+            <div class="form-group">
+                <label>سعر البيع</label>
+                <input type="number" name="selling_price" step="0.01" value="{{ product.selling_price|default:0 }}">
+            </div>
+        </div>
+        
+        <div class="form-row">
+            <div class="form-group">
+                <label>الحد الأدنى للمخزون</label>
+                <input type="number" name="min_stock" step="0.01" value="{{ product.min_stock|default:0 }}">
+            </div>
+            <div class="form-group">
+                <label>الحد الأقصى للمخزون</label>
+                <input type="number" name="max_stock" step="0.01" value="{{ product.max_stock|default:0 }}">
+            </div>
+        </div>
+        
+        <!-- حقل اختيار حساب الإيرادات -->
+        <div class="form-group">
+            <label>💰 حساب الإيرادات</label>
+            <select name="revenue_account" class="form-control">
+                <option value="">-- اختر حساب الإيرادات --</option>
+                {% for account in revenue_accounts %}
+                <option value="{{ account.id }}" {% if product.revenue_account_id == account.id %}selected{% endif %}>
+                    {{ account.code }} - {{ account.name }}
+                </option>
+                {% endfor %}
+            </select>
+            <small class="text-muted">اختر حساب الإيرادات المناسب لهذه السلعة (مثل: مبيعات تامة الصنع، مبيعات مهمات، إلخ)</small>
+        </div>
+        
+        <div class="form-group">
+            <label>ملاحظات</label>
+            <textarea name="notes" rows="3" placeholder="ملاحظات إضافية">{{ product.notes|default:'' }}</textarea>
+        </div>
+        
+        <div class="modal-buttons">
+            <button type="submit" class="btn btn-primary">حفظ</button>
+            <a href="{% url 'goods_list' %}" class="btn btn-secondary">إلغاء</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% block title %}تحديث أسعار الصرف - نظام الحسابات المصري{% endblock %}
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h2>💱 تحديث أسعار الصرف</h2>
+        <a href="{% url 'currencies_list' %}" class="btn btn-secondary">← رجوع للعملات</a>
+    </div>
+    
+    <p>أسعار الصرف مقابل العملة الأساسية</p>
+    
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
+                 <tr>
+                    <th>العملة</th>
+                    <th>الكود</th>
+                    <th>الرمز</th>
+                    <th>السعر الحالي</th>
+                    <th>تحديث السعر</th>
+                 </tr>
+            </thead>
+            <tbody>
+                {% for currency in currencies %}
+                <tr>
+                    <td><strong>{{ currency.name_ar }}</strong></td>
+                    <td>{{ currency.code }}</td>
+                    <td>{{ currency.symbol|default:"-" }}</td>
+                    <td>
+                        <span class="badge badge-info">{{ currency.exchange_rate|floatformat:4 }}</span>
+                    </td>
+                    <td>
+                        <form method="post" action="{% url 'update_exchange_rate' %}" style="display: flex; gap: 10px;">
+                            {% csrf_token %}
+                            <input type="hidden" name="currency_id" value="{{ currency.id }}">
+                            <input type="number" name="rate" step="0.000001" value="{{ currency.exchange_rate }}" style="width: 120px; padding: 5px;" required>
+                            <button type="submit" class="btn btn-primary btn-sm">تحديث</button>
+                        </form>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" style="text-align: center;">لا توجد عملات فرعية</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

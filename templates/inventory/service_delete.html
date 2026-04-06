@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+{% block title %}حذف خدمة - نظام الحسابات المصري{% endblock %}
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h2>🗑️ حذف خدمة</h2>
+        <a href="{% url 'services_list' %}" class="btn btn-secondary">← رجوع</a>
+    </div>
+    
+    <p>هل أنت متأكد من حذف الخدمة <strong>{{ service.code }} - {{ service.name_ar }}</strong>؟</p>
+    
+    <form method="post">
+        {% csrf_token %}
+        <div class="modal-buttons">
+            <button type="submit" class="btn btn-danger">نعم، حذف</button>
+            <a href="{% url 'services_list' %}" class="btn btn-secondary">إلغاء</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

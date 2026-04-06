@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+{% block title %}السلع - نظام الحسابات المصري{% endblock %}
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h2>📦 قائمة السلع</h2>
+        <a href="{% url 'goods_create' %}" class="btn btn-primary">+ إضافة سلعة جديدة</a>
+    </div>
+    
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>الكود</th>
+                    <th>الاسم</th>
+                    <th>الوحدة</th>
+                    <th>سعر الشراء</th>
+                    <th>سعر البيع</th>
+                    <th>حساب الإيرادات</th>
+                    <th>الرصيد الحالي</th>
+                    <th>الإجراءات</th>
+                 </thead>
+            <tbody>
+                {% for product in products %}
+                 <tr>
+                    <td><strong>{{ product.code }}</strong></td>
+                    <td>{{ product.name_ar }}</td>
+                    <td>{{ product.unit }}</td>
+                    <td>{{ product.purchase_price|floatformat:2 }}</td>
+                    <td>{{ product.selling_price|floatformat:2 }}</td>
+                    <td>
+                        {% if product.revenue_account %}
+                            {{ product.revenue_account.code }} - {{ product.revenue_account.name }}
+                        {% else %}
+                            <span class="text-muted">غير محدد</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if product.current_stock <= product.min_stock %}
+                            <span style="color: #dc3545; font-weight: bold;">{{ product.current_stock|floatformat:2 }}</span>
+                        {% else %}
+                            {{ product.current_stock|floatformat:2 }}
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a href="{% url 'goods_update' product.id %}" class="btn btn-warning btn-sm">✏️</a>
+                        <a href="{% url 'goods_delete' product.id %}" class="btn btn-danger btn-sm" onclick="return confirm('هل أنت متأكد؟')">🗑️</a>
+                    </td>
+                 </tr>
+                {% empty %}
+                 <tr>
+                    <td colspan="8" style="text-align: center;">لا توجد سلع</td>
+                 </tr>
+                {% endfor %}
+            </tbody>
+         </table>
+    </div>
+</div>
+{% endblock %}

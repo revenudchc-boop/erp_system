@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+{% block title %}الصناديق النقدية - نظام الحسابات المصري{% endblock %}
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h2>💰 الصناديق النقدية</h2>
+        <a href="{% url 'cash_create' %}" class="btn btn-primary">+ إضافة صندوق</a>
+    </div>
+    
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>اسم الصندوق</th>
+                    <th>العملة</th>
+                    <th>الرصيد الافتتاحي</th>
+                    <th>الرصيد الحالي</th>
+                    <th>الحالة</th>
+                    <th>الإجراءات</th>
+                  </tr>
+            </thead>
+            <tbody>
+                {% for cash in cash_registers %}
+                <tr>
+                    <td><strong>{{ cash.name }}</strong></td>
+                    <td>{{ cash.currency.code }}</td>
+                    <td>{{ cash.opening_balance|floatformat:2 }}</td>
+                    <td>
+                        <span style="{% if cash.current_balance > 0 %}color: #28a745;{% elif cash.current_balance < 0 %}color: #dc3545;{% endif %}">
+                            {{ cash.current_balance|floatformat:2 }}
+                        </span>
+                    </td>
+                    <td>
+                        {% if cash.is_active %}
+                            <span class="badge badge-success">نشط</span>
+                        {% else %}
+                            <span class="badge badge-secondary">غير نشط</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a href="{% url 'cash_update' cash.id %}" class="btn btn-warning btn-sm">✏️</a>
+                        <a href="{% url 'cash_delete' cash.id %}" class="btn btn-danger btn-sm" onclick="return confirm('هل أنت متأكد؟')">🗑️</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" style="text-align: center;">لا توجد صناديق نقدية</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+{% block title %}حذف حساب - نظام الحسابات المصري{% endblock %}
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h2>🗑️ حذف حساب</h2>
+        <a href="{% url 'account_list' %}" class="btn btn-secondary">← رجوع</a>
+    </div>
+    
+    <p>هل أنت متأكد من حذف الحساب <strong>{{ account.code }} - {{ account.name }}</strong>؟</p>
+    
+    {% if warnings %}
+        <div class="alert alert-error" style="background: #f8d7da; color: #721c24; padding: 15px; border-radius: 8px; margin: 15px 0;">
+            <strong>⚠️ تحذير: لا يمكن حذف هذا الحساب</strong>
+            <ul style="margin-top: 10px; margin-right: 20px;">
+                {% for warning in warnings %}
+                    <li>{{ warning }}</li>
+                {% endfor %}
+            </ul>
+            <p style="margin-top: 10px;">لحذف هذا الحساب، يجب أولاً حذف العناصر المرتبطة به.</p>
+        </div>
+        <div class="modal-buttons">
+            <a href="{% url 'account_list' %}" class="btn btn-secondary">رجوع</a>
+        </div>
+    {% else %}
+        <form method="post">
+            {% csrf_token %}
+            <div class="modal-buttons">
+                <button type="submit" class="btn btn-danger">نعم، حذف</button>
+                <a href="{% url 'account_list' %}" class="btn btn-secondary">إلغاء</a>
+            </div>
+        </form>
+    {% endif %}
+</div>
+{% endblock %}

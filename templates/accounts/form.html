@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+{% block title %}{{ title }} - نظام الحسابات المصري{% endblock %}
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h2>{{ title }}</h2>
+        <a href="{% url 'account_list' %}" class="btn btn-secondary">← رجوع</a>
+    </div>
+    <form method="post">
+        {% csrf_token %}
+        <div class="form-group">
+            <label>رقم الحساب:</label>
+            <input type="text" name="code" value="{{ account.code|default:'' }}" required placeholder="مثال: 1110">
+        </div>
+        <div class="form-group">
+            <label>اسم الحساب:</label>
+            <input type="text" name="name" value="{{ account.name|default:'' }}" required placeholder="مثال: الصندوق">
+        </div>
+        <div class="form-group">
+            <label>نوع الحساب:</label>
+            <select name="type">
+                <option value="asset" {% if account.type == 'asset' %}selected{% endif %}>أصل</option>
+                <option value="liability" {% if account.type == 'liability' %}selected{% endif %}>خصم</option>
+                <option value="equity" {% if account.type == 'equity' %}selected{% endif %}>حقوق ملكية</option>
+                <option value="revenue" {% if account.type == 'revenue' %}selected{% endif %}>إيراد</option>
+                <option value="expense" {% if account.type == 'expense' %}selected{% endif %}>مصروف</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>الحساب الأب:</label>
+            <select name="parent">
+                <option value="">-- بدون أب (حساب رئيسي) --</option>
+                {% for parent in parents %}
+                <option value="{{ parent.id }}" {% if account.parent_id == parent.id %}selected{% endif %}>{{ parent.code }} - {{ parent.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="modal-buttons">
+            <button type="submit" class="btn btn-primary">حفظ</button>
+            <a href="{% url 'account_list' %}" class="btn btn-secondary">إلغاء</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

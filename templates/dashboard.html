@@ -1,0 +1,229 @@
+{% extends 'base.html' %}
+{% block title %}الرئيسية - نظام الحسابات المصري{% endblock %}
+{% block content %}
+
+<!-- البطاقات الرئيسية -->
+<div class="card">
+    <div class="card-header">
+        <h2>🏠 لوحة التحكم</h2>
+    </div>
+    
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; margin-top: 20px;">
+        
+        <!-- بطاقة دليل الحسابات -->
+        <div style="background: linear-gradient(135deg, #667eea, #764ba2); color: white; padding: 25px; border-radius: 12px; text-align: center; transition: transform 0.3s; cursor: pointer;" onmouseover="this.style.transform='translateY(-5px)'" onmouseout="this.style.transform='translateY(0)'">
+            <div style="font-size: 48px; margin-bottom: 15px;">📁</div>
+            <h3 style="font-size: 22px; margin-bottom: 10px;">دليل الحسابات</h3>
+            <p style="margin-bottom: 20px; opacity: 0.9; font-size: 14px;">إدارة الحسابات وشجرة الحسابات</p>
+            <a href="{% url 'account_list' %}" style="display: inline-block; background: white; color: #667eea; padding: 10px 25px; border-radius: 8px; text-decoration: none; font-weight: bold; transition: transform 0.2s;">عرض الحسابات</a>
+        </div>
+        
+        <!-- بطاقة القيود اليومية -->
+        <div style="background: linear-gradient(135deg, #1e3c72, #2a5298); color: white; padding: 25px; border-radius: 12px; text-align: center; transition: transform 0.3s; cursor: pointer;" onmouseover="this.style.transform='translateY(-5px)'" onmouseout="this.style.transform='translateY(0)'">
+            <div style="font-size: 48px; margin-bottom: 15px;">📝</div>
+            <h3 style="font-size: 22px; margin-bottom: 10px;">القيود اليومية</h3>
+            <p style="margin-bottom: 20px; opacity: 0.9; font-size: 14px;">إضافة وتعديل وترحيل القيود المحاسبية</p>
+            <a href="{% url 'entry_list' %}" style="display: inline-block; background: white; color: #1e3c72; padding: 10px 25px; border-radius: 8px; text-decoration: none; font-weight: bold; transition: transform 0.2s;">عرض القيود</a>
+        </div>
+        
+        <!-- بطاقة ميزان المراجعة -->
+        <div style="background: linear-gradient(135deg, #28a745, #20c997); color: white; padding: 25px; border-radius: 12px; text-align: center; transition: transform 0.3s; cursor: pointer;" onmouseover="this.style.transform='translateY(-5px)'" onmouseout="this.style.transform='translateY(0)'">
+            <div style="font-size: 48px; margin-bottom: 15px;">⚖️</div>
+            <h3 style="font-size: 22px; margin-bottom: 10px;">ميزان المراجعة</h3>
+            <p style="margin-bottom: 20px; opacity: 0.9; font-size: 14px;">عرض التقارير المالية حسب الفترة</p>
+            <a href="{% url 'trial_balance' %}" style="display: inline-block; background: white; color: #28a745; padding: 10px 25px; border-radius: 8px; text-decoration: none; font-weight: bold; transition: transform 0.2s;">عرض الميزان</a>
+        </div>
+        
+        <!-- بطاقة العملات (جديدة) -->
+        <div style="background: linear-gradient(135deg, #f39c12, #e67e22); color: white; padding: 25px; border-radius: 12px; text-align: center; transition: transform 0.3s; cursor: pointer;" onmouseover="this.style.transform='translateY(-5px)'" onmouseout="this.style.transform='translateY(0)'">
+            <div style="font-size: 48px; margin-bottom: 15px;">💰</div>
+            <h3 style="font-size: 22px; margin-bottom: 10px;">العملات</h3>
+            <p style="margin-bottom: 20px; opacity: 0.9; font-size: 14px;">إدارة العملات وأسعار الصرف</p>
+            <a href="{% url 'currencies_list' %}" style="display: inline-block; background: white; color: #e67e22; padding: 10px 25px; border-radius: 8px; text-decoration: none; font-weight: bold; transition: transform 0.2s;">إدارة العملات</a>
+        </div>
+		<div style="background: linear-gradient(135deg, #17a2b8, #138496); color: white; padding: 25px; border-radius: 12px; text-align: center; transition: transform 0.3s;">
+    <div style="font-size: 48px; margin-bottom: 15px;">👥</div>
+    <h3 style="font-size: 22px; margin-bottom: 10px;">العملاء</h3>
+    <p style="margin-bottom: 20px; opacity: 0.9;">إدارة بيانات العملاء وكشوف الحسابات</p>
+    <a href="{% url 'customers_list' %}" style="display: inline-block; background: white; color: #17a2b8; padding: 10px 25px; border-radius: 8px; text-decoration: none; font-weight: bold;">إدارة العملاء</a>
+</div>
+<div style="background: linear-gradient(135deg, #6c757d, #495057); color: white; padding: 25px; border-radius: 12px; text-align: center; transition: transform 0.3s;">
+    <div style="font-size: 48px; margin-bottom: 15px;">🏭</div>
+    <h3 style="font-size: 22px; margin-bottom: 10px;">الموردين</h3>
+    <p style="margin-bottom: 20px; opacity: 0.9;">إدارة بيانات الموردين وكشوف الحسابات</p>
+    <a href="{% url 'suppliers_list' %}" style="display: inline-block; background: white; color: #495057; padding: 10px 25px; border-radius: 8px; text-decoration: none; font-weight: bold;">إدارة الموردين</a>
+</div>
+<div style="background: linear-gradient(135deg, #007bff, #0056b3); color: white; padding: 25px; border-radius: 12px; text-align: center; transition: transform 0.3s;">
+    <div style="font-size: 48px; margin-bottom: 15px;">🏦</div>
+    <h3 style="font-size: 22px; margin-bottom: 10px;">الحسابات البنكية</h3>
+    <p style="margin-bottom: 20px; opacity: 0.9;">إدارة الحسابات البنكية وكشوف الحسابات</p>
+    <a href="{% url 'banks_list' %}" style="display: inline-block; background: white; color: #007bff; padding: 10px 25px; border-radius: 8px; text-decoration: none; font-weight: bold;">إدارة البنوك</a>
+</div>
+
+<div style="background: linear-gradient(135deg, #28a745, #1e7e34); color: white; padding: 25px; border-radius: 12px; text-align: center; transition: transform 0.3s;">
+    <div style="font-size: 48px; margin-bottom: 15px;">💰</div>
+    <h3 style="font-size: 22px; margin-bottom: 10px;">الصناديق النقدية</h3>
+    <p style="margin-bottom: 20px; opacity: 0.9;">إدارة الصناديق النقدية والأرصدة</p>
+    <a href="{% url 'cash_list' %}" style="display: inline-block; background: white; color: #28a745; padding: 10px 25px; border-radius: 8px; text-decoration: none; font-weight: bold;">إدارة الصناديق</a>
+</div>
+<div style="background: linear-gradient(135deg, #17a2b8, #138496); color: white; padding: 25px; border-radius: 12px; text-align: center; transition: transform 0.3s;">
+    <div style="font-size: 48px; margin-bottom: 15px;">📦</div>
+    <h3 style="font-size: 22px; margin-bottom: 10px;">المخزون</h3>
+    <p style="margin-bottom: 20px; opacity: 0.9;">إدارة السلع والخدمات والمستودعات</p>
+    <a href="{% url 'goods_list' %}" style="display: inline-block; background: white; color: #17a2b8; padding: 10px 25px; border-radius: 8px; text-decoration: none; font-weight: bold;">السلع</a>
+    <a href="{% url 'services_list' %}" style="display: inline-block; background: white; color: #17a2b8; padding: 10px 25px; border-radius: 8px; text-decoration: none; font-weight: bold; margin-right: 10px;">الخدمات</a>
+</div>
+<div style="background: linear-gradient(135deg, #fd7e14, #e67e22); color: white; padding: 25px; border-radius: 12px; text-align: center; transition: transform 0.3s;">
+    <div style="font-size: 48px; margin-bottom: 15px;">🎯</div>
+    <h3 style="font-size: 22px; margin-bottom: 10px;">مراكز التكلفة</h3>
+    <p style="margin-bottom: 20px; opacity: 0.9;">توزيع التكاليف وتحليل الربحية</p>
+    <a href="{% url 'cost_centers_list' %}" style="display: inline-block; background: white; color: #e67e22; padding: 10px 25px; border-radius: 8px; text-decoration: none; font-weight: bold;">إدارة مراكز التكلفة</a>
+</div>
+<div style="background: linear-gradient(135deg, #6f42c1, #5a32a3); color: white; padding: 25px; border-radius: 12px; text-align: center; transition: transform 0.3s;">
+    <div style="font-size: 48px; margin-bottom: 15px;">📊</div>
+    <h3 style="font-size: 22px; margin-bottom: 10px;">التقارير المالية</h3>
+    <p style="margin-bottom: 20px; opacity: 0.9;">قائمة الدخل، المركز المالي، التدفقات النقدية</p>
+    <a href="{% url 'reports_dashboard' %}" style="display: inline-block; background: white; color: #6f42c1; padding: 10px 25px; border-radius: 8px; text-decoration: none; font-weight: bold;">عرض التقارير</a>
+</div>
+<div style="background: linear-gradient(135deg, #17a2b8, #138496); color: white; padding: 25px; border-radius: 12px; text-align: center;">
+    <div style="font-size: 48px; margin-bottom: 15px;">🔄</div>
+    <h3 style="font-size: 22px; margin-bottom: 10px;">المشتريات والمبيعات</h3>
+    <p style="margin-bottom: 20px;">إدارة فواتير المشتريات والمبيعات والمردودات</p>
+    <a href="{% url 'purchase_list' %}" style="display: inline-block; background: white; color: #17a2b8; padding: 10px 20px; border-radius: 8px; text-decoration: none; font-weight: bold; margin: 5px;">📦 المشتريات</a>
+    <a href="{% url 'sales_list' %}" style="display: inline-block; background: white; color: #17a2b8; padding: 10px 20px; border-radius: 8px; text-decoration: none; font-weight: bold; margin: 5px;">📊 المبيعات</a>
+</div>
+    </div>
+</div>
+
+<!-- قسم الإحصائيات -->
+<div class="card" style="margin-top: 25px;">
+    <div class="card-header">
+        <h2>📊 إحصائيات النظام</h2>
+    </div>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;">
+        <div style="background: linear-gradient(135deg, #f8f9fa, #e9ecef); padding: 20px; border-radius: 12px; text-align: center;">
+            <div style="font-size: 40px; color: #667eea;">📁</div>
+            <div style="font-size: 28px; font-weight: bold; color: #667eea; margin: 10px 0;">{{ total_accounts|default:0 }}</div>
+            <div style="color: #555;">إجمالي الحسابات</div>
+        </div>
+        <div style="background: linear-gradient(135deg, #f8f9fa, #e9ecef); padding: 20px; border-radius: 12px; text-align: center;">
+            <div style="font-size: 40px; color: #28a745;">📝</div>
+            <div style="font-size: 28px; font-weight: bold; color: #28a745; margin: 10px 0;">{{ total_entries|default:0 }}</div>
+            <div style="color: #555;">إجمالي القيود</div>
+        </div>
+        <div style="background: linear-gradient(135deg, #f8f9fa, #e9ecef); padding: 20px; border-radius: 12px; text-align: center;">
+            <div style="font-size: 40px; color: #f39c12;">💰</div>
+            <div style="font-size: 28px; font-weight: bold; color: #f39c12; margin: 10px 0;">{{ total_currencies|default:0 }}</div>
+            <div style="color: #555;">العملات</div>
+        </div>
+		
+    </div>
+</div>
+
+<!-- قسم آخر العمليات -->
+<div class="card" style="margin-top: 25px;">
+    <div class="card-header">
+        <h2>🕒 آخر العمليات</h2>
+    </div>
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>التاريخ</th>
+                    <th>نوع العملية</th>
+                    <th>الوصف</th>
+                    <th>الحالة</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if last_entries %}
+                    {% for entry in last_entries %}
+                    <tr>
+                        <td>{{ entry.date|date:"Y-m-d" }}</td>
+                        <td>📝 قيد محاسبي</td>
+                        <td>{{ entry.description|truncatechars:50 }}</td>
+                        <td><span class="badge badge-{{ entry.is_posted|yesno:'posted,draft' }}">{{ entry.is_posted|yesno:"مرحل,مسودة" }}</span></td>
+                    </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="4" style="text-align: center;">لا توجد عمليات حديثة</td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+    <div style="text-align: left; margin-top: 15px;">
+        <a href="{% url 'entry_list' %}" class="btn btn-primary btn-sm">عرض جميع القيود →</a>
+    </div>
+</div>
+
+<!-- قسم المساعدة السريعة -->
+<div class="card" style="margin-top: 25px;">
+    <div class="card-header">
+        <h2>❓ دليل المساعدة السريع</h2>
+    </div>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px;">
+        <div style="padding: 15px; background: #f8f9fa; border-radius: 10px;">
+            <div style="font-size: 20px; color: #1e3c72; margin-bottom: 10px;">📌 الخطوات الأساسية</div>
+            <ul style="margin-top: 10px; padding-right: 20px; color: #555; line-height: 1.8;">
+                <li>1️⃣ أضف الحسابات في دليل الحسابات</li>
+                <li>2️⃣ أنشئ القيود اليومية</li>
+                <li>3️⃣ قم بترحيل القيود</li>
+                <li>4️⃣ عرض ميزان المراجعة</li>
+                <li>5️⃣ إدارة العملات وأسعار الصرف</li>
+            </ul>
+        </div>
+        <div style="padding: 15px; background: #f8f9fa; border-radius: 10px;">
+            <div style="font-size: 20px; color: #28a745; margin-bottom: 10px;">💡 نصائح مهمة</div>
+            <ul style="margin-top: 10px; padding-right: 20px; color: #555; line-height: 1.8;">
+                <li>✓ تأكد من توازن القيد قبل الترحيل</li>
+                <li>✓ لا يمكن تعديل القيد بعد ترحيله</li>
+                <li>✓ يمكن إلغاء ترحيل القيد إذا لزم الأمر</li>
+                <li>✓ العملة الأساسية لا يمكن حذفها</li>
+            </ul>
+        </div>
+        <div style="padding: 15px; background: #f8f9fa; border-radius: 10px;">
+            <div style="font-size: 20px; color: #f39c12; margin-bottom: 10px;">🛠️ الميزات المتاحة</div>
+            <ul style="margin-top: 10px; padding-right: 20px; color: #555; line-height: 1.8;">
+                <li>✓ دليل حسابات شجري</li>
+                <li>✓ قيود يومية مع سطور متعددة</li>
+                <li>✓ ترحيل وإلغاء ترحيل</li>
+                <li>✓ ميزان مراجعة حسب الفترة</li>
+                <li>✓ إدارة العملات وأسعار الصرف</li>
+                <li>✓ متوافق مع المعايير المصرية</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<!-- قسم التطويرات القادمة -->
+<div class="card" style="margin-top: 25px; background: linear-gradient(135deg, #f8f9fa, #e9ecef);">
+    <div class="card-header">
+        <h2>🚀 ميزات قادمة</h2>
+    </div>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+        <div style="text-align: center; padding: 15px;">
+            <div style="font-size: 32px;">🏦</div>
+            <div style="font-weight: bold; margin-top: 5px;">إدارة البنوك</div>
+            <div style="font-size: 12px; color: #666;">حسابات بنكية وتسوية</div>
+        </div>
+        <div style="text-align: center; padding: 15px;">
+            <div style="font-size: 32px;">📦</div>
+            <div style="font-weight: bold; margin-top: 5px;">نظام المخزون</div>
+            <div style="font-size: 12px; color: #666;">إدارة الأصناف والمستودعات</div>
+        </div>
+        <div style="text-align: center; padding: 15px;">
+            <div style="font-size: 32px;">👥</div>
+            <div style="font-weight: bold; margin-top: 5px;">العملاء والموردين</div>
+            <div style="font-size: 12px; color: #666;">كشوف حسابات وذمم</div>
+        </div>
+        <div style="text-align: center; padding: 15px;">
+            <div style="font-size: 32px;">📄</div>
+            <div style="font-weight: bold; margin-top: 5px;">الفاتورة الإلكترونية</div>
+            <div style="font-size: 12px; color: #666;">متوافق مع مصلحة الضرائب</div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

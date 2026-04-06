@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+{% block title %}{{ title }} - نظام الحسابات المصري{% endblock %}
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h2>{{ title }}</h2>
+        <a href="{% url 'categories_list' %}" class="btn btn-secondary">← رجوع</a>
+    </div>
+    
+    <form method="post">
+        {% csrf_token %}
+        
+        <div class="form-row">
+            <div class="form-group">
+                <label>كود الفئة *</label>
+                <input type="text" name="code" value="{{ category.code|default:'' }}" required placeholder="مثال: CAT001">
+            </div>
+            
+            <div class="form-group">
+                <label>اسم الفئة *</label>
+                <input type="text" name="name" value="{{ category.name|default:'' }}" required placeholder="مثال: إلكترونيات">
+            </div>
+        </div>
+        
+        <div class="form-group">
+            <label>الفئة الأب</label>
+            <select name="parent">
+                <option value="">-- بدون أب (فئة رئيسية) --</option>
+                {% for parent in parents %}
+                <option value="{{ parent.id }}" {% if category.parent_id == parent.id %}selected{% endif %}>{{ parent.code }} - {{ parent.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        
+        <div class="modal-buttons">
+            <button type="submit" class="btn btn-primary">حفظ</button>
+            <a href="{% url 'categories_list' %}" class="btn btn-secondary">إلغاء</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

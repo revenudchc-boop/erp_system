@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+{% block title %}ميزان المراجعة - نظام الحسابات المصري{% endblock %}
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h2>⚖️ ميزان المراجعة</h2>
+    </div>
+    <form method="get" style="display: flex; gap: 15px; align-items: flex-end; margin-bottom: 25px; flex-wrap: wrap;">
+        <div class="form-group" style="margin-bottom: 0;">
+            <label>السنة:</label>
+            <input type="number" name="year" value="{{ year|default:2025 }}" required style="width: 100px;">
+        </div>
+        <div class="form-group" style="margin-bottom: 0;">
+            <label>الشهر:</label>
+            <input type="number" name="month" value="{{ month|default:3 }}" min="1" max="12" required style="width: 80px;">
+        </div>
+        <button type="submit" class="btn btn-primary">عرض التقرير</button>
+    </form>
+    
+    {% if result %}
+    <div class="table-responsive">
+        <table style="width: 100%; border-collapse: collapse;">
+            <thead>
+                <tr style="background: #f8f9fa;">
+                    <th style="padding: 12px; text-align: right;">رقم الحساب</th>
+                    <th style="padding: 12px; text-align: right;">اسم الحساب</th>
+                    <th style="padding: 12px; text-align: right;">مدين</th>
+                    <th style="padding: 12px; text-align: right;">دائن</th>
+                    <th style="padding: 12px; text-align: right;">الرصيد</th>
+                    <th style="padding: 12px; text-align: right;">الطبيعة</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in result %}
+                <tr style="border-bottom: 1px solid #e0e0e0;">
+                    <td style="padding: 12px;">{{ item.code }}</td>
+                    <td style="padding: 12px;">{{ item.name }}</td>
+                    <td style="padding: 12px;">{% if item.debit > 0 %}{{ item.debit|floatformat:2 }}{% else %}-{% endif %}</td>
+                    <td style="padding: 12px;">{% if item.credit > 0 %}{{ item.credit|floatformat:2 }}{% else %}-{% endif %}</td>
+                    <td style="padding: 12px;"><strong>{{ item.balance|floatformat:2 }}</strong></td>
+                    <td style="padding: 12px;">{{ item.side }}</td>
+                </tr>
+                {% endfor %}
+                <tr style="background: #f0f2f5; font-weight: bold;">
+                    <td colspan="2" style="padding: 12px;"><strong>الإجمالي</strong></td>
+                    <td style="padding: 12px;"><strong>{{ total_debit|floatformat:2 }}</strong></td>
+                    <td style="padding: 12px;"><strong>{{ total_credit|floatformat:2 }}</strong></td>
+                    <td colspan="2" style="padding: 12px;"></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+        {% if year and month %}
+        <div style="text-align: center; padding: 40px;">لا توجد بيانات في هذه الفترة</div>
+        {% endif %}
+    {% endif %}
+</div>
+{% endblock %}

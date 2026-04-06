@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+{% block title %}القيود اليومية - نظام الحسابات المصري{% endblock %}
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h2>📝 القيود اليومية</h2>
+        <a href="{% url 'entry_create' %}" class="btn btn-primary">+ إضافة قيد</a>
+    </div>
+    
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>التاريخ</th>
+                    <th>البيان</th>
+                    <th>المرجع</th>
+                    <th>الحالة</th>
+                    <th>تاريخ الترحيل</th>
+                    <th>المبلغ</th>
+                    <th>الإجراءات</th>
+                 </thead>
+            <tbody>
+                {% for entry in entries %}
+                 <tr>
+                    <td>{{ entry.date|date:"Y-m-d" }}</td>
+                    <td>{{ entry.description|truncatechars:50 }}</td>
+                    <td>{{ entry.reference|default:"-" }}</td>
+                    <td>
+                        {% if entry.is_posted %}
+                            <span class="badge badge-posted">✅ مرحل</span>
+                        {% else %}
+                            <span class="badge badge-draft">📝 مسودة</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ entry.posted_at|date:"Y-m-d H:i"|default:"-" }}</td>
+                    <td>
+                        {% with total=0 %}
+                            {% for line in entry.lines.all %}
+                                {% if line.debit > 0 %}
+                                    {% with total=total|add:line.debit %}{% endwith %}
+                                {% endif %}
+                            {% endfor %}
+                            {{ total|floatformat:2 }}
+                        {% endwith %}
+                    </td>
+                    <td>
+                        {% if not entry.is_posted %}
+                            <a href="{% url 'entry_post' entry.id %}" class="btn btn-success btn-sm" onclick="return confirm('هل أنت متأكد من ترحيل هذا القيد؟')">✅ ترحيل</a>
+                            <a href="{% url 'entry_update' entry.id %}" class="btn btn-warning btn-sm">✏️ تعديل</a>
+                            <a href="{% url 'entry_delete' entry.id %}" class="btn btn-danger btn-sm" onclick="return confirm('هل أنت متأكد من حذف هذا القيد؟')">🗑️ حذف</a>
+                        {% else %}
+                            <a href="{% url 'entry_unpost' entry.id %}" class="btn btn-warning btn-sm" onclick="return confirmUnpost()">↩️ إلغاء الترحيل</a>
+                            <a href="{% url 'journal_entry_detail' entry.id %}" class="btn btn-info btn-sm" target="_blank">👁️ معاينة القيد</a>
+                            <a href="{% url 'journal_entry_print' entry.id %}" class="btn btn-secondary btn-sm" target="_blank">🖨️ طباعة</a>
+                        {% endif %}
+                    </td>
+                 </tr>
+                {% empty %}
+                 <tr>
+                    <td colspan="7" style="text-align: center;">لا توجد قيود محاسبية</td>
+                 </tr>
+                {% endfor %}
+            </tbody>
+         </table>
+    </div>
+</div>
+
+<script>
+function confirmUnpost() {
+    return confirm('⚠️ تحذير: إلغاء الترحيل سيعيد القيد إلى حالة المسودة وسيتم تحديث أرصدة الحسابات.\n\nهل أنت متأكد من إلغاء ترحيل هذا القيد؟');
+}
+</script>
+{% endblock %}

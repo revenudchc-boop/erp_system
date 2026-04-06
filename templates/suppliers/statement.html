@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+{% block title %}كشف حساب - {{ supplier.name }} - نظام الحسابات المصري{% endblock %}
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h2>📄 كشف حساب المورد: {{ supplier.name }} ({{ supplier.code }})</h2>
+        <a href="{% url 'suppliers_list' %}" class="btn btn-secondary">← رجوع للموردين</a>
+    </div>
+    
+    <div class="supplier-info" style="background: #f8f9fa; padding: 15px; border-radius: 10px; margin-bottom: 20px;">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px;">
+            <div><strong>📞 الهاتف:</strong> {{ supplier.phone|default:"-" }}</div>
+            <div><strong>📧 البريد:</strong> {{ supplier.email|default:"-" }}</div>
+            <div><strong>💰 الرصيد الحالي:</strong> 
+                <span style="{% if balance > 0 %}color: #dc3545;{% elif balance < 0 %}color: #28a745;{% endif %} font-weight: bold;">
+                    {{ balance|floatformat:2 }}
+                </span>
+            </div>
+            <div><strong>⏱️ شروط السداد:</strong> {{ supplier.payment_terms|default:"غير محدد" }} يوم</div>
+        </div>
+    </div>
+    
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>التاريخ</th>
+                    <th>البيان</th>
+                    <th>المرجع</th>
+                    <th>مدين</th>
+                    <th>دائن</th>
+                    <th>الرصيد</th>
+                 </tr>
+            </thead>
+            <tbody>
+                {% for trans in transactions %}
+                <tr>
+                    <td>{{ trans.date|date:"Y-m-d" }}</td>
+                    <td>{{ trans.description }}</td>
+                    <td>{{ trans.reference|default:"-" }}</td>
+                    <td>{% if trans.debit > 0 %}{{ trans.debit|floatformat:2 }}{% else %}-{% endif %}</td>
+                    <td>{% if trans.credit > 0 %}{{ trans.credit|floatformat:2 }}{% else %}-{% endif %}</td>
+                    <td><strong>{{ trans.balance|floatformat:2 }}</strong></td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" style="text-align: center;">لا توجد حركات لهذا المورد</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+            <tfoot style="background: #f8f9fa; font-weight: bold;">
+                <tr>
+                    <td colspan="5" style="text-align: left;">الرصيد النهائي</td>
+                    <td>{{ balance|floatformat:2 }}</td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+    
+    <div style="margin-top: 20px; text-align: center;">
+        <button onclick="window.print()" class="btn btn-primary">🖨️ طباعة كشف الحساب</button>
+    </div>
+</div>
+
+<style>
+    @media print {
+        .sidebar, .header, .card-header a, .btn, .footer {
+            display: none;
+        }
+        .card {
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            background: white;
+        }
+    }
+</style>
+{% endblock %}

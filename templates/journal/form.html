@@ -1,0 +1,727 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}{{ title }} - نظام الحسابات المصري{% endblock %}
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h2>{{ title }}</h2>
+        <a href="{% url 'entry_list' %}" class="btn btn-secondary">← رجوع</a>
+    </div>
+    
+    <form method="post" id="entry-form">
+        {% csrf_token %}
+        <input type="hidden" id="entry-id" value="{{ entry.id|default:'' }}">
+        
+        <!-- معلومات القيد الأساسية -->
+        <div class="form-grid">
+            <div class="form-group">
+                <label>📅 التاريخ</label>
+                <input type="date" name="date" id="entry-date" value="{{ entry.date|date:'Y-m-d'|default:'' }}" required>
+            </div>
+            <div class="form-group">
+                <label>🔢 رقم المرجع</label>
+                <input type="text" name="reference" id="entry-reference" value="{{ entry.reference|default:'' }}" placeholder="رقم المستند">
+            </div>
+        </div>
+        
+        <div class="form-group">
+            <label>📝 البيان</label>
+            <textarea name="description" id="entry-description" rows="2" placeholder="وصف القيد..." required>{{ entry.description|default:'' }}</textarea>
+        </div>
+        
+		<!-- قسم التسويات الجردية -->
+<div class="adjustment-section">
+    <div class="section-title">
+        <h3>📋 تسوية جردية</h3>
+        <label class="toggle-switch">
+            <input type="checkbox" id="is-adjustment" {% if entry.is_adjustment %}checked{% endif %}>
+            <span class="toggle-label">تفعيل التسوية</span>
+        </label>
+    </div>
+    
+    <div id="adjustment-fields" style="display: {% if entry.is_adjustment %}block{% else %}none{% endif %};">
+        <div class="form-row">
+            <div class="form-group">
+                <label>نوع التسوية</label>
+                <select name="adjustment_type" id="adjustment-type">
+                    <option value="none" {% if entry.adjustment_type == 'none' %}selected{% endif %}>-- اختر نوع التسوية --</option>
+                    <option value="inventory" {% if entry.adjustment_type == 'inventory' %}selected{% endif %}>📦 جرد مخزون</option>
+                    <option value="bank" {% if entry.adjustment_type == 'bank' %}selected{% endif %}>🏦 تسوية بنكية</option>
+                    <option value="depreciation" {% if entry.adjustment_type == 'depreciation' %}selected{% endif %}>⚙️ إهلاك الأصول</option>
+                    <option value="currency" {% if entry.adjustment_type == 'currency' %}selected{% endif %}>💱 فروق عملة</option>
+                    <option value="accrual" {% if entry.adjustment_type == 'accrual' %}selected{% endif %}>📅 مصروفات مستحقة</option>
+                    <option value="prepaid" {% if entry.adjustment_type == 'prepaid' %}selected{% endif %}>⏳ مصروفات مدفوعة مقدماً</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>رقم المستند / المرجع</label>
+                <input type="text" name="adjustment_reference" id="adjustment-reference" value="{{ entry.adjustment_reference|default:'' }}" placeholder="رقم محضر الجرد / كشف البنك">
+            </div>
+        </div>
+        <div class="form-group">
+            <label>ملاحظات التسوية</label>
+            <textarea name="adjustment_notes" id="adjustment-notes" rows="2" placeholder="ملاحظات إضافية عن التسوية...">{{ entry.adjustment_notes|default:'' }}</textarea>
+        </div>
+    </div>
+</div>
+		
+        <hr class="section-divider">
+        
+        <!-- سطور القيد -->
+        <div class="entries-container">
+            <div class="entries-header">
+                <div class="header-debit">📥 الطرف المدين</div>
+                <div class="header-credit">📤 الطرف الدائن</div>
+            </div>
+            
+            <div class="entries-body">
+                <div class="debit-column">
+                    <div id="debit-lines-container">
+                        {% if lines %}
+                            {% for line in lines %}
+                                {% if line.debit > 0 %}
+                                <div class="line-card debit-line" data-id="{{ line.id }}">
+                                    <div class="line-account">
+                                        <span class="account-code">{{ line.account.code }}</span>
+                                        <span class="account-name">{{ line.account.name }}</span>
+                                        <input type="hidden" name="debit_account[]" value="{{ line.account.id }}">
+                                        <input type="hidden" name="debit_cost_center[]" value="{{ line.cost_center_id|default:'' }}">
+                                        <button type="button" class="btn-remove" onclick="removeLine(this)">✖</button>
+                                    </div>
+                                    <div class="line-details">
+                                        <input type="number" name="debit_amount[]" step="0.01" value="{{ line.debit }}" placeholder="المبلغ" class="amount-input" onchange="calculateTotal()">
+                                        <select name="debit_cost_center_display[]" class="cost-center-select" onchange="updateCostCenter(this)">
+                                            <option value="">-- بدون مركز تكلفة --</option>
+                                            {% for center in cost_centers %}
+                                            <option value="{{ center.id }}" {% if line.cost_center_id == center.id %}selected{% endif %}>{{ center.code }} - {{ center.name }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+                                {% endif %}
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+                    <button type="button" class="btn-add-line" onclick="openAccountModal('debit')">+ إضافة حساب مدين</button>
+                </div>
+                
+                <div class="credit-column">
+                    <div id="credit-lines-container">
+                        {% if lines %}
+                            {% for line in lines %}
+                                {% if line.credit > 0 %}
+                                <div class="line-card credit-line" data-id="{{ line.id }}">
+                                    <div class="line-account">
+                                        <span class="account-code">{{ line.account.code }}</span>
+                                        <span class="account-name">{{ line.account.name }}</span>
+                                        <input type="hidden" name="credit_account[]" value="{{ line.account.id }}">
+                                        <input type="hidden" name="credit_cost_center[]" value="{{ line.cost_center_id|default:'' }}">
+                                        <button type="button" class="btn-remove" onclick="removeLine(this)">✖</button>
+                                    </div>
+                                    <div class="line-details">
+                                        <input type="number" name="credit_amount[]" step="0.01" value="{{ line.credit }}" placeholder="المبلغ" class="amount-input" onchange="calculateTotal()">
+                                        <select name="credit_cost_center_display[]" class="cost-center-select" onchange="updateCostCenter(this)">
+                                            <option value="">-- بدون مركز تكلفة --</option>
+                                            {% for center in cost_centers %}
+                                            <option value="{{ center.id }}" {% if line.cost_center_id == center.id %}selected{% endif %}>{{ center.code }} - {{ center.name }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+                                {% endif %}
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+                    <button type="button" class="btn-add-line" onclick="openAccountModal('credit')">+ إضافة حساب دائن</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- ملخص القيد -->
+        <div class="summary-section">
+            <div class="summary-row">
+                <div class="summary-item">
+                    <span class="summary-label">إجمالي المدين:</span>
+                    <span class="summary-value" id="total-debit">0.00</span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-label">إجمالي الدائن:</span>
+                    <span class="summary-value" id="total-credit">0.00</span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-label">الفرق:</span>
+                    <span class="summary-value" id="difference">0.00</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- أزرار الإجراءات -->
+        <div class="action-buttons">
+            <button type="submit" name="action" value="save" class="btn btn-primary">💾 حفظ كمسودة</button>
+            <button type="submit" name="action" value="save_and_post" class="btn btn-success">✅ حفظ وترحيل</button>
+            <a href="{% url 'entry_list' %}" class="btn btn-secondary">🗑️ إلغاء</a>
+        </div>
+    </form>
+</div>
+
+<!-- نافذة منبثقة لاختيار الحساب من الشجرة -->
+<div id="account-modal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>📁 اختيار الحساب</h3>
+            <button type="button" class="modal-close" onclick="closeAccountModal()">✖</button>
+        </div>
+        <div class="search-box">
+            <input type="text" id="account-search" placeholder="🔍 بحث برقم الحساب أو الاسم..." onkeyup="searchAccounts()">
+        </div>
+        <div id="modal-accounts-tree" class="accounts-tree">
+            <div class="loading-spinner">جاري تحميل الحسابات...</div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" onclick="closeAccountModal()" class="btn btn-secondary">إلغاء</button>
+        </div>
+    </div>
+</div>
+
+<style>
+    .form-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 20px;
+        margin-bottom: 20px;
+    }
+    
+    .section-divider {
+        margin: 25px 0;
+        border: none;
+        border-top: 2px solid #e9ecef;
+    }
+    
+    .entries-container {
+        background: #f8f9fa;
+        border-radius: 16px;
+        padding: 20px;
+        margin-bottom: 25px;
+    }
+    
+    .entries-header {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+        margin-bottom: 20px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid #dee2e6;
+    }
+    
+    .header-debit {
+        font-size: 18px;
+        font-weight: bold;
+        color: #28a745;
+        padding: 8px;
+        background: #e8f5e9;
+        border-radius: 8px;
+        text-align: center;
+    }
+    
+    .header-credit {
+        font-size: 18px;
+        font-weight: bold;
+        color: #dc3545;
+        padding: 8px;
+        background: #ffebee;
+        border-radius: 8px;
+        text-align: center;
+    }
+    
+    .entries-body {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+    }
+    
+    .line-card {
+        background: white;
+        border-radius: 12px;
+        padding: 12px;
+        margin-bottom: 12px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    
+    .debit-line {
+        border-right: 4px solid #28a745;
+    }
+    
+    .credit-line {
+        border-right: 4px solid #dc3545;
+    }
+    
+    .line-account {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+        padding-bottom: 8px;
+        border-bottom: 1px dashed #e0e0e0;
+    }
+    
+    .account-code {
+        font-weight: bold;
+        color: #1e3c72;
+        background: #e9ecef;
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-size: 12px;
+    }
+    
+    .account-name {
+        flex: 1;
+        margin: 0 10px;
+        font-size: 14px;
+    }
+    
+    .btn-remove {
+        background: #dc3545;
+        color: white;
+        border: none;
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        cursor: pointer;
+    }
+    
+    .line-details {
+        display: flex;
+        gap: 10px;
+    }
+    
+    .line-details input, .line-details select {
+        flex: 1;
+        padding: 8px;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+    }
+    
+    .btn-add-line {
+        width: 100%;
+        padding: 10px;
+        background: #e9ecef;
+        border: 2px dashed #adb5bd;
+        border-radius: 10px;
+        cursor: pointer;
+        margin-top: 10px;
+    }
+    
+    .summary-section {
+        background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 25px;
+    }
+    
+    .summary-row {
+        display: flex;
+        justify-content: space-around;
+        flex-wrap: wrap;
+        gap: 20px;
+    }
+    
+    .summary-item {
+        text-align: center;
+    }
+    
+    .summary-value {
+        font-size: 24px;
+        font-weight: bold;
+    }
+    
+    #total-debit { color: #28a745; }
+    #total-credit { color: #dc3545; }
+    #difference { color: #fd7e14; }
+    
+    .action-buttons {
+        display: flex;
+        gap: 15px;
+        justify-content: flex-end;
+    }
+    
+    .modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.5);
+        z-index: 1000;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .modal.active {
+        display: flex;
+    }
+    
+    .modal-content {
+        background: white;
+        border-radius: 20px;
+        width: 90%;
+        max-width: 600px;
+        max-height: 80vh;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .modal-header {
+        padding: 20px;
+        border-bottom: 1px solid #e0e0e0;
+        display: flex;
+        justify-content: space-between;
+    }
+    
+    .search-box {
+        padding: 15px 20px;
+        border-bottom: 1px solid #e0e0e0;
+    }
+    
+    .search-box input {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 25px;
+    }
+    
+    .accounts-tree {
+        flex: 1;
+        overflow-y: auto;
+        padding: 15px 20px;
+    }
+    
+    .modal-footer {
+        padding: 15px 20px;
+        border-top: 1px solid #e0e0e0;
+        text-align: left;
+    }
+    
+    .tree {
+        list-style: none;
+        padding-right: 0;
+    }
+    
+    .tree li {
+        margin: 5px 0;
+        padding: 8px 12px;
+        border-radius: 8px;
+        cursor: pointer;
+    }
+    
+    .tree li:hover {
+        background: #f0f2f5;
+    }
+    
+    .tree .folder { font-weight: bold; color: #1e3c72; }
+    .tree .leaf { color: #28a745; }
+    .tree .children { padding-right: 20px; display: none; }
+    .tree .children.expanded { display: block; }
+    .tree .toggle-icon { display: inline-block; width: 20px; cursor: pointer; }
+    
+    @media (max-width: 768px) {
+        .entries-body {
+            grid-template-columns: 1fr;
+        }
+        .entries-header {
+            display: none;
+        }
+    }
+	.adjustment-section {
+    background: #f8f9fa;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.section-title {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.section-title h3 {
+    color: #1e3c72;
+    margin: 0;
+}
+
+.toggle-switch {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+}
+
+.toggle-switch input {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+}
+</style>
+
+<script>
+let currentType = null;
+let allAccounts = [];
+
+async function loadAccountsTree() {
+    try {
+        const response = await fetch('/api/accounts/tree/');
+        allAccounts = await response.json();
+        renderTreeForModal(allAccounts, document.getElementById('modal-accounts-tree'));
+    } catch (error) {
+        document.getElementById('modal-accounts-tree').innerHTML = '<div class="loading-spinner">حدث خطأ</div>';
+    }
+}
+
+function renderTreeForModal(accounts, container) {
+    if (!accounts || accounts.length === 0) {
+        container.innerHTML = '<div>لا توجد حسابات</div>';
+        return;
+    }
+    const ul = document.createElement('ul');
+    ul.className = 'tree';
+    accounts.forEach(account => {
+        const li = document.createElement('li');
+        const hasChildren = account.children && account.children.length > 0;
+        if (hasChildren) {
+            li.innerHTML = `<div class="folder"><span class="toggle-icon" onclick="toggleChildren(event, this)">▶</span> 📁 ${account.code} - ${account.name}</div><div class="children">${renderChildrenHtml(account.children)}</div>`;
+        } else {
+            li.innerHTML = `<div class="leaf" onclick="selectAccount(${account.id}, '${account.code}', '${account.name.replace(/'/g, "\\'")}')">📄 ${account.code} - ${account.name}</div>`;
+        }
+        ul.appendChild(li);
+    });
+    container.innerHTML = '';
+    container.appendChild(ul);
+}
+
+function renderChildrenHtml(children) {
+    if (!children || children.length === 0) return '';
+    let html = '<ul class="tree">';
+    children.forEach(child => {
+        const hasGrand = child.children && child.children.length > 0;
+        if (hasGrand) {
+            html += `<li><div class="folder"><span class="toggle-icon" onclick="toggleChildren(event, this)">▶</span> 📁 ${child.code} - ${child.name}</div><div class="children">${renderChildrenHtml(child.children)}</div></li>`;
+        } else {
+            html += `<li><div class="leaf" onclick="selectAccount(${child.id}, '${child.code}', '${child.name.replace(/'/g, "\\'")}')">📄 ${child.code} - ${child.name}</div></li>`;
+        }
+    });
+    html += '</ul>';
+    return html;
+}
+
+function toggleChildren(event, element) {
+    event.stopPropagation();
+    const childrenDiv = element.closest('.folder').nextElementSibling;
+    if (childrenDiv) {
+        childrenDiv.classList.toggle('expanded');
+        element.textContent = childrenDiv.classList.contains('expanded') ? '▼' : '▶';
+    }
+}
+
+function searchAccounts() {
+    const term = document.getElementById('account-search').value.toLowerCase();
+    if (!term) {
+        renderTreeForModal(allAccounts, document.getElementById('modal-accounts-tree'));
+        return;
+    }
+    const filtered = filterAccounts(allAccounts, term);
+    renderTreeForModal(filtered, document.getElementById('modal-accounts-tree'));
+}
+
+function filterAccounts(accounts, term) {
+    return accounts.filter(account => {
+        const matches = account.code.toLowerCase().includes(term) || account.name.toLowerCase().includes(term);
+        if (matches) return true;
+        if (account.children && account.children.length > 0) {
+            const childMatches = filterAccounts(account.children, term);
+            if (childMatches.length > 0) {
+                account.children = childMatches;
+                return true;
+            }
+        }
+        return false;
+    });
+}
+
+function selectAccount(accountId, code, name) {
+    const container = currentType === 'debit' ? 'debit-lines-container' : 'credit-lines-container';
+    const nameField = currentType === 'debit' ? 'debit_account[]' : 'credit_account[]';
+    const amountField = currentType === 'debit' ? 'debit_amount[]' : 'credit_amount[]';
+    
+    const existing = document.querySelectorAll(`#${container} input[name="${nameField}"]`);
+    for (let input of existing) {
+        if (input.value == accountId) {
+            alert('⚠️ هذا الحساب مضاف بالفعل');
+            closeAccountModal();
+            return;
+        }
+    }
+    
+    const lineDiv = document.createElement('div');
+    lineDiv.className = `line-card ${currentType === 'debit' ? 'debit-line' : 'credit-line'}`;
+    
+    let costCenterOptions = '<option value="">-- بدون مركز تكلفة --</option>';
+    {% for center in cost_centers %}
+    costCenterOptions += '<option value="{{ center.id }}">{{ center.code }} - {{ center.name }}</option>';
+    {% endfor %}
+    
+    lineDiv.innerHTML = `
+        <div class="line-account">
+            <span class="account-code">${code}</span>
+            <span class="account-name">${name}</span>
+            <input type="hidden" name="${nameField}" value="${accountId}">
+            <input type="hidden" name="${currentType === 'debit' ? 'debit_cost_center[]' : 'credit_cost_center[]'}" value="">
+            <button type="button" class="btn-remove" onclick="removeLine(this)">✖</button>
+        </div>
+        <div class="line-details">
+            <input type="number" name="${amountField}" step="0.01" placeholder="المبلغ" class="amount-input" onchange="calculateTotal()">
+            <select name="${currentType === 'debit' ? 'debit_cost_center_display[]' : 'credit_cost_center_display[]'}" class="cost-center-select" onchange="updateCostCenter(this)">
+                ${costCenterOptions}
+            </select>
+        </div>
+    `;
+    
+    document.getElementById(container).appendChild(lineDiv);
+    closeAccountModal();
+    calculateTotal();
+}
+
+function updateCostCenter(select) {
+    const hiddenInput = select.closest('.line-card').querySelector('input[type="hidden"][name$="_cost_center[]"]');
+    if (hiddenInput) hiddenInput.value = select.value;
+}
+
+function removeLine(btn) {
+    btn.closest('.line-card').remove();
+    calculateTotal();
+}
+
+function calculateTotal() {
+    let totalDebit = 0, totalCredit = 0;
+    document.querySelectorAll('input[name="debit_amount[]"]').forEach(i => totalDebit += parseFloat(i.value) || 0);
+    document.querySelectorAll('input[name="credit_amount[]"]').forEach(i => totalCredit += parseFloat(i.value) || 0);
+    
+    document.getElementById('total-debit').innerText = totalDebit.toFixed(2);
+    document.getElementById('total-credit').innerText = totalCredit.toFixed(2);
+    const diff = totalDebit - totalCredit;
+    document.getElementById('difference').innerText = diff.toFixed(2);
+    document.getElementById('difference').style.color = Math.abs(diff) < 0.01 ? '#28a745' : '#dc3545';
+}
+
+function openAccountModal(type) {
+    currentType = type;
+    document.getElementById('account-modal').classList.add('active');
+    if (allAccounts.length === 0) loadAccountsTree();
+    else renderTreeForModal(allAccounts, document.getElementById('modal-accounts-tree'));
+}
+
+function closeAccountModal() {
+    document.getElementById('account-modal').classList.remove('active');
+}
+
+// إرسال النموذج
+document.getElementById('entry-form').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const lines = [];
+    document.querySelectorAll('input[name="debit_account[]"]').forEach((input, i) => {
+        if (input.value) {
+            lines.push({
+                account_id: input.value,
+                debit: parseFloat(document.querySelectorAll('input[name="debit_amount[]"]')[i]?.value) || 0,
+                credit: 0,
+                cost_center_id: document.querySelectorAll('input[name="debit_cost_center[]"]')[i]?.value || null
+            });
+        }
+    });
+    document.querySelectorAll('input[name="credit_account[]"]').forEach((input, i) => {
+        if (input.value) {
+            lines.push({
+                account_id: input.value,
+                debit: 0,
+                credit: parseFloat(document.querySelectorAll('input[name="credit_amount[]"]')[i]?.value) || 0,
+                cost_center_id: document.querySelectorAll('input[name="credit_cost_center[]"]')[i]?.value || null
+            });
+        }
+    });
+    
+const data = {
+    date: document.getElementById('entry-date').value,
+    description: document.getElementById('entry-description').value,
+    reference: document.getElementById('entry-reference').value,
+    lines: lines,
+    is_adjustment: document.getElementById('is-adjustment')?.checked || false,
+    adjustment_type: document.getElementById('adjustment-type')?.value || 'none',
+    adjustment_reference: document.getElementById('adjustment-reference')?.value || '',
+    adjustment_notes: document.getElementById('adjustment-notes')?.value || ''
+};
+    
+    const entryId = document.getElementById('entry-id').value;
+    const action = document.querySelector('button[clicked]')?.value || 'save';
+    
+    try {
+       let url = '/api/journal/api/entries/create/';
+let method = 'POST';
+
+if (entryId) {
+    url = `/api/journal/api/entries/${entryId}/update/`;
+    method = 'POST';
+}
+        
+        const response = await fetch(url, {
+            method: method,
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            },
+            body: JSON.stringify(data)
+        });
+        
+        const result = await response.json();
+        if (response.ok) {
+            if (action === 'save_and_post' && result.id) {
+                await fetch(`/api/journal/entries/${result.id}/post/`, {
+                    method: 'POST',
+                    headers: { 'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value }
+                });
+                alert('✅ تم حفظ القيد وترحيله بنجاح');
+            } else {
+                alert('✅ تم حفظ القيد بنجاح');
+            }
+            window.location.href = '/api/journal/entries/';
+        } else {
+            alert('❌ خطأ: ' + (result.error || 'حدث خطأ'));
+        }
+    } catch (error) {
+        alert('❌ حدث خطأ في الاتصال بالخادم');
+    }
+});
+
+document.querySelectorAll('button[type="submit"]').forEach(btn => {
+    btn.addEventListener('click', function() {
+        document.querySelectorAll('button[type="submit"]').forEach(b => b.removeAttribute('clicked'));
+        this.setAttribute('clicked', 'true');
+    });
+});
+
+calculateTotal();
+
+// تفعيل/إلغاء حقول التسوية
+const isAdjustmentCheckbox = document.getElementById('is-adjustment');
+if (isAdjustmentCheckbox) {
+    isAdjustmentCheckbox.addEventListener('change', function() {
+        const adjustmentFields = document.getElementById('adjustment-fields');
+        if (adjustmentFields) {
+            adjustmentFields.style.display = this.checked ? 'block' : 'none';
+        }
+    });
+}
+</script>
+
+{% endblock %}

@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+{% block title %}{{ title }} - نظام الحسابات المصري{% endblock %}
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h2>{{ title }}</h2>
+        <a href="{% url 'banks_list' %}" class="btn btn-secondary">← رجوع</a>
+    </div>
+    
+    <form method="post">
+        {% csrf_token %}
+        
+        <div class="form-row">
+            <div class="form-group">
+                <label>اسم البنك *</label>
+                <input type="text" name="bank_name" value="{{ bank.bank_name|default:'' }}" required placeholder="مثال: البنك الأهلي المصري">
+            </div>
+            
+            <div class="form-group">
+                <label>الفرع</label>
+                <input type="text" name="branch" value="{{ bank.branch|default:'' }}" placeholder="الفرع الرئيسي">
+            </div>
+        </div>
+        
+        <div class="form-row">
+            <div class="form-group">
+                <label>رقم الحساب *</label>
+                <input type="text" name="account_number" value="{{ bank.account_number|default:'' }}" required placeholder="رقم الحساب البنكي">
+            </div>
+            
+            <div class="form-group">
+                <label>IBAN</label>
+                <input type="text" name="iban" value="{{ bank.iban|default:'' }}" placeholder="رقم IBAN إن وجد">
+            </div>
+        </div>
+        
+        <div class="form-row">
+            <div class="form-group">
+                <label>العملة *</label>
+                <select name="currency" required>
+                    <option value="">اختر العملة</option>
+                    {% for curr in currencies %}
+                    <option value="{{ curr.id }}" {% if bank.currency_id == curr.id %}selected{% endif %}>{{ curr.code }} - {{ curr.name_ar }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label>الرصيد الافتتاحي</label>
+                <input type="number" name="opening_balance" step="0.01" value="{{ bank.opening_balance|default:0 }}">
+                <small style="color: #666;">الرصيد عند بداية استخدام النظام</small>
+            </div>
+        </div>
+        
+        <div class="form-group">
+            <label>ملاحظات</label>
+            <textarea name="notes" rows="3" placeholder="ملاحظات إضافية">{{ bank.notes|default:'' }}</textarea>
+        </div>
+        
+        <div class="modal-buttons">
+            <button type="submit" class="btn btn-primary">حفظ</button>
+            <a href="{% url 'banks_list' %}" class="btn btn-secondary">إلغاء</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

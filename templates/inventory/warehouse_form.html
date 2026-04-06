@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% block title %}{{ title }} - نظام الحسابات المصري{% endblock %}
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h2>{{ title }}</h2>
+        <a href="{% url 'warehouses_list' %}" class="btn btn-secondary">← رجوع</a>
+    </div>
+    
+    <form method="post">
+        {% csrf_token %}
+        
+        <div class="form-row">
+            <div class="form-group">
+                <label>كود المستودع *</label>
+                <input type="text" name="code" value="{{ warehouse.code|default:'' }}" required placeholder="مثال: WH001">
+            </div>
+            
+            <div class="form-group">
+                <label>اسم المستودع *</label>
+                <input type="text" name="name" value="{{ warehouse.name|default:'' }}" required placeholder="مثال: المستودع الرئيسي">
+            </div>
+        </div>
+        
+        <div class="form-group">
+            <label>العنوان</label>
+            <textarea name="address" rows="3" placeholder="عنوان المستودع">{{ warehouse.address|default:'' }}</textarea>
+        </div>
+        
+        <div class="modal-buttons">
+            <button type="submit" class="btn btn-primary">حفظ</button>
+            <a href="{% url 'warehouses_list' %}" class="btn btn-secondary">إلغاء</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

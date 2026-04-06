@@ -1,0 +1,92 @@
+{% extends 'base.html' %}
+{% block title %}معاينة القيد المحاسبي{% endblock %}
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h2>📋 معاينة القيد المحاسبي</h2>
+        <div>
+            <a href="{% url 'journal_entry_print' entry.id %}" class="btn btn-primary" target="_blank">🖨️ طباعة</a>
+            <a href="javascript:history.back()" class="btn btn-secondary">← رجوع</a>
+        </div>
+    </div>
+    
+    <div class="entry-info" style="margin-bottom: 20px;">
+        <div class="form-row">
+            <div class="form-group">
+                <strong>التاريخ:</strong> {{ entry.date|date:"Y-m-d" }}
+            </div>
+            <div class="form-group">
+                <strong>المرجع:</strong> {{ entry.reference|default:"-" }}
+            </div>
+            <div class="form-group">
+                <strong>الحالة:</strong> 
+                {% if entry.is_posted %}
+                    <span class="badge badge-success">مرحل</span>
+                {% else %}
+                    <span class="badge badge-warning">مسودة</span>
+                {% endif %}
+            </div>
+        </div>
+        <div class="form-group">
+            <strong>البيان:</strong> {{ entry.description }}
+        </div>
+    </div>
+    
+    <hr>
+    
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
+                 <tr>
+                    <th>رقم الحساب</th>
+                    <th>اسم الحساب</th>
+                    <th>مدين</th>
+                    <th>دائن</th>
+                 </tr>
+            </thead>
+            <tbody>
+                {% for line in lines %}
+                 <tr>
+                    <td>{{ line.account.code }}</td>
+                    <td>{{ line.account.name }}</td>
+                    <td style="text-align: left;">{{ line.debit|floatformat:2 }}</td>
+                    <td style="text-align: left;">{{ line.credit|floatformat:2 }}</td>
+                 </tr>
+                {% endfor %}
+                <tr style="background: #f8f9fa; font-weight: bold;">
+                    <td colspan="2">الإجمالي</td>
+                    <td style="text-align: left;">{{ total_debit|floatformat:2 }}</td>
+                    <td style="text-align: left;">{{ total_credit|floatformat:2 }}</td>
+                 </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<style>
+@media print {
+    .sidebar, .header, .card-header a, .btn, .footer {
+        display: none;
+    }
+    .card {
+        margin: 0;
+        padding: 0;
+    }
+    body {
+        background: white;
+    }
+}
+</style>
+
+<script>
+// حساب الإجمالي في template
+let totalDebit = 0;
+let totalCredit = 0;
+{% for line in lines %}
+totalDebit += {{ line.debit }};
+totalCredit += {{ line.credit }};
+{% endfor %}
+document.getElementById('total-debit-display').innerText = totalDebit.toFixed(2);
+document.getElementById('total-credit-display').innerText = totalCredit.toFixed(2);
+</script>
+{% endblock %}

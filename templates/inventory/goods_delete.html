@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+{% block title %}حذف سلعة - نظام الحسابات المصري{% endblock %}
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h2>🗑️ حذف سلعة</h2>
+        <a href="{% url 'goods_list' %}" class="btn btn-secondary">← رجوع</a>
+    </div>
+    
+    <p>هل أنت متأكد من حذف السلعة <strong>{{ product.code }} - {{ product.name_ar }}</strong>؟</p>
+    
+    {% if product.current_stock > 0 %}
+        <div class="alert alert-error" style="background: #f8d7da; color: #721c24; padding: 12px; border-radius: 8px; margin: 15px 0;">
+            ⚠️ تحذير: هذه السلعة لديه رصيد ({{ product.current_stock|floatformat:2 }}) لا يمكن حذفه قبل تسوية الرصيد.
+        </div>
+        <div class="modal-buttons">
+            <a href="{% url 'goods_list' %}" class="btn btn-secondary">رجوع</a>
+        </div>
+    {% else %}
+        <form method="post">
+            {% csrf_token %}
+            <div class="modal-buttons">
+                <button type="submit" class="btn btn-danger">نعم، حذف</button>
+                <a href="{% url 'goods_list' %}" class="btn btn-secondary">إلغاء</a>
+            </div>
+        </form>
+    {% endif %}
+</div>
+{% endblock %}

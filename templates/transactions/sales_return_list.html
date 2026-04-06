@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+{% block title %}مردودات المبيعات - نظام الحسابات المصري{% endblock %}
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h2>🔄 مردودات المبيعات</h2>
+        <a href="{% url 'sales_return_create' %}" class="btn btn-primary">+ مردود مبيعات جديد</a>
+    </div>
+    
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>رقم المردود</th>
+                    <th>التاريخ</th>
+                    <th>العميل</th>
+                    <th>الفاتورة الأصلية</th>
+                    <th>المستودع</th>
+                    <th>الحالة</th>
+                    <th>الإجراءات</th>
+                 </thead>
+            <tbody>
+                {% for return_inv in returns %}
+                <tr>
+                    <td><strong>{{ return_inv.return_number }}</strong></td>
+                    <td>{{ return_inv.date|date:"Y-m-d" }}</td>
+                    <td>{{ return_inv.customer.name }}</td>
+                    <td>{{ return_inv.original_invoice.invoice_number }}</td>
+                    <td>{{ return_inv.warehouse.name|default:"-" }}</td>
+                    <td>
+                        {% if return_inv.status == 'posted' %}
+                            <span class="badge badge-success">مرحل</span>
+                        {% else %}
+                            <span class="badge badge-warning">مسودة</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if return_inv.status == 'draft' %}
+                            <a href="{% url 'sales_return_post' return_inv.id %}" class="btn btn-success btn-sm" onclick="return confirm('هل أنت متأكد من ترحيل هذا المردود؟')">✅ ترحيل</a>
+                            <a href="{% url 'sales_return_update' return_inv.id %}" class="btn btn-warning btn-sm">✏️ تعديل</a>
+                            <a href="{% url 'sales_return_delete' return_inv.id %}" class="btn btn-danger btn-sm" onclick="return confirm('هل أنت متأكد من حذف هذا المردود؟')">🗑️ حذف</a>
+                        {% elif return_inv.status == 'posted' %}
+                            <a href="{% url 'sales_return_unpost' return_inv.id %}" class="btn btn-warning btn-sm" onclick="return confirm('⚠️ تحذير: إلغاء الترحيل سيعيد المردود إلى حالة المسودة. هل أنت متأكد؟')">↩️ إلغاء الترحيل</a>
+                            {% if return_inv.journal_entry %}
+                                <a href="{% url 'journal_entry_detail' return_inv.journal_entry.id %}" class="btn btn-info btn-sm" target="_blank">👁️ معاينة القيد</a>
+                                <button onclick="printJournalEntry({{ return_inv.journal_entry.id }})" class="btn btn-secondary btn-sm">🖨️ طباعة</button>
+                            {% endif %}
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" style="text-align: center;">لا توجد مردودات مبيعات</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+function printJournalEntry(entryId) {
+    const printWindow = window.open(`/api/journal/entry/${entryId}/print/`, '_blank');
+    printWindow.focus();
+}
+</script>
+{% endblock %}

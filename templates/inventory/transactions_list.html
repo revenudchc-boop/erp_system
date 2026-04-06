@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+{% block title %}حركات المخزون - نظام الحسابات المصري{% endblock %}
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h2>📊 حركات المخزون</h2>
+    </div>
+    
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>التاريخ</th>
+                    <th>الصنف</th>
+                    <th>نوع الحركة</th>
+                    <th>الكمية</th>
+                    <th>سعر الوحدة</th>
+                    <th>الإجمالي</th>
+                    <th>المستودع</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for trans in transactions %}
+                <tr>
+                    <td>{{ trans.date|date:"Y-m-d" }}</td>
+                    <td><strong>{{ trans.product.code }}</strong> - {{ trans.product.name_ar }}</td>
+                    <td>
+                        {% if trans.type == 'purchase_in' %}
+                            <span class="badge badge-success">شراء وارد</span>
+                        {% elif trans.type == 'sales_out' %}
+                            <span class="badge badge-danger">بيع صادر</span>
+                        {% elif trans.type == 'return_in' %}
+                            <span class="badge badge-info">مرتجع وارد</span>
+                        {% elif trans.type == 'return_out' %}
+                            <span class="badge badge-warning">مرتجع صادر</span>
+                        {% elif trans.type == 'adjustment_in' %}
+                            <span class="badge badge-primary">تسوية زيادة</span>
+                        {% elif trans.type == 'adjustment_out' %}
+                            <span class="badge badge-secondary">تسوية نقص</span>
+                        {% else %}
+                            {{ trans.type }}
+                        {% endif %}
+                    </td>
+                    <td>{{ trans.quantity|floatformat:2 }}</td>
+                    <td>{{ trans.unit_cost|floatformat:2 }}</td>
+                    <td>{{ trans.total_cost|floatformat:2 }}</td>
+                    <td>{{ trans.warehouse.name }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" style="text-align: center;">لا توجد حركات مخزنية</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

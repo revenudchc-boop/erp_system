@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% block title %}حذف فئة - نظام الحسابات المصري{% endblock %}
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h2>🗑️ حذف فئة</h2>
+        <a href="{% url 'categories_list' %}" class="btn btn-secondary">← رجوع</a>
+    </div>
+    
+    <p>هل أنت متأكد من حذف الفئة <strong>{{ category.code }} - {{ category.name }}</strong>؟</p>
+    
+    {% if category.products.exists %}
+        <div class="alert alert-error" style="background: #f8d7da; color: #721c24; padding: 12px; border-radius: 8px; margin: 15px 0;">
+            ⚠️ تحذير: هذه الفئة تحتوي على منتجات، لا يمكن حذفها.
+        </div>
+        <a href="{% url 'categories_list' %}" class="btn btn-secondary">رجوع</a>
+    {% else %}
+        <form method="post">
+            {% csrf_token %}
+            <div class="modal-buttons">
+                <button type="submit" class="btn btn-danger">نعم، حذف</button>
+                <a href="{% url 'categories_list' %}" class="btn btn-secondary">إلغاء</a>
+            </div>
+        </form>
+    {% endif %}
+</div>
+{% endblock %}

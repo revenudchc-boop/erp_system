@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+{% block title %}فواتير المشتريات - نظام الحسابات المصري{% endblock %}
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h2>📦 فواتير المشتريات</h2>
+        <a href="{% url 'purchase_create' %}" class="btn btn-primary">+ فاتورة مشتريات جديدة</a>
+    </div>
+    
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>رقم الفاتورة</th>
+                    <th>التاريخ</th>
+                    <th>المورد</th>
+                    <th>المستودع</th>
+                    <th>الحالة</th>
+                    <th>تاريخ الترحيل</th>
+                    <th>الإجراءات</th>
+                 </thead>
+            <tbody>
+                {% for purchase in purchases %}
+                <tr>
+                    <td><strong>{{ purchase.invoice_number }}</strong></td>
+                    <td>{{ purchase.date|date:"Y-m-d" }}</td>
+                    <td>{{ purchase.supplier.name }}</td>
+                    <td>{{ purchase.warehouse.name }}</td>
+                    <td>
+                        {% if purchase.status == 'posted' %}
+                            <span class="badge badge-success">مرحل</span>
+                        {% elif purchase.status == 'draft' %}
+                            <span class="badge badge-warning">مسودة</span>
+                        {% else %}
+                            <span class="badge badge-danger">ملغي</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ purchase.journal_entry.posted_at|date:"Y-m-d H:i"|default:"-" }}</td>
+                    <td>
+                        {% if purchase.status == 'draft' %}
+                            <a href="{% url 'purchase_post' purchase.id %}" class="btn btn-success btn-sm" onclick="return confirm('هل أنت متأكد من ترحيل هذه الفاتورة؟')">✅ ترحيل</a>
+                            <a href="{% url 'purchase_update' purchase.id %}" class="btn btn-warning btn-sm">✏️ تعديل</a>
+                            <a href="{% url 'purchase_delete' purchase.id %}" class="btn btn-danger btn-sm" onclick="return confirm('هل أنت متأكد من حذف هذه الفاتورة؟')">🗑️ حذف</a>
+                        {% elif purchase.status == 'posted' %}
+                            <a href="{% url 'purchase_unpost' purchase.id %}" class="btn btn-warning btn-sm" onclick="return confirm('⚠️ تحذير: إلغاء الترحيل سيعيد الفاتورة إلى حالة المسودة. هل أنت متأكد؟')">↩️ إلغاء الترحيل</a>
+                            {% if purchase.journal_entry %}
+                                <a href="{% url 'journal_entry_detail' purchase.journal_entry.id %}" class="btn btn-info btn-sm" target="_blank">👁️ معاينة القيد</a>
+                                <button onclick="printJournalEntry({{ purchase.journal_entry.id }})" class="btn btn-secondary btn-sm">🖨️ طباعة</button>
+                            {% endif %}
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" style="text-align: center;">لا توجد فواتير مشتريات</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+function printJournalEntry(entryId) {
+    const printWindow = window.open(`/api/journal/entry/${entryId}/print/`, '_blank');
+    printWindow.focus();
+}
+</script>
+{% endblock %}

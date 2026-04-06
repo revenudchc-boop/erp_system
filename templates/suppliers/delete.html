@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+{% block title %}حذف مورد - نظام الحسابات المصري{% endblock %}
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h2>🗑️ حذف مورد</h2>
+        <a href="{% url 'suppliers_list' %}" class="btn btn-secondary">← رجوع</a>
+    </div>
+    
+    <p>هل أنت متأكد من حذف المورد <strong>{{ supplier.code }} - {{ supplier.name }}</strong>؟</p>
+    
+    {% if has_balance %}
+        <div class="alert alert-error" style="background: #f8d7da; color: #721c24; padding: 12px; border-radius: 8px; margin: 15px 0;">
+            ⚠️ تحذير: هذا المورد لديه رصيد ({{ supplier.account.balance|floatformat:2 }}) لا يمكن حذفه قبل تسوية الرصيد.
+        </div>
+        <div class="modal-buttons">
+            <a href="{% url 'suppliers_list' %}" class="btn btn-secondary">رجوع</a>
+        </div>
+    {% else %}
+        <form method="post">
+            {% csrf_token %}
+            <div class="modal-buttons">
+                <button type="submit" class="btn btn-danger">نعم، حذف</button>
+                <a href="{% url 'suppliers_list' %}" class="btn btn-secondary">إلغاء</a>
+            </div>
+        </form>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% block title %}حذف عملة - نظام الحسابات المصري{% endblock %}
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h2>🗑️ حذف عملة</h2>
+        <a href="{% url 'currencies_list' %}" class="btn btn-secondary">← رجوع</a>
+    </div>
+    
+    <p>هل أنت متأكد من حذف العملة <strong>{{ currency.code }} - {{ currency.name_ar }}</strong>؟</p>
+    
+    {% if currency.is_base %}
+        <div class="alert alert-error" style="background: #f8d7da; color: #721c24; padding: 12px; border-radius: 8px;">
+            ⚠️ لا يمكن حذف العملة الأساسية للنظام
+        </div>
+        <a href="{% url 'currencies_list' %}" class="btn btn-secondary">رجوع</a>
+    {% else %}
+        <form method="post">
+            {% csrf_token %}
+            <div class="modal-buttons">
+                <button type="submit" class="btn btn-danger">نعم، حذف</button>
+                <a href="{% url 'currencies_list' %}" class="btn btn-secondary">إلغاء</a>
+            </div>
+        </form>
+    {% endif %}
+</div>
+{% endblock %}

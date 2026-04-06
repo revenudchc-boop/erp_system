@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% block title %}حذف فاتورة مشتريات - نظام الحسابات المصري{% endblock %}
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h2>🗑️ حذف فاتورة مشتريات</h2>
+        <a href="{% url 'purchase_list' %}" class="btn btn-secondary">← رجوع</a>
+    </div>
+    
+    <p>هل أنت متأكد من حذف فاتورة المشتريات <strong>{{ purchase.invoice_number }}</strong>؟</p>
+    <p><strong>المورد:</strong> {{ purchase.supplier.name }}</p>
+    <p><strong>التاريخ:</strong> {{ purchase.date|date:"Y-m-d" }}</p>
+    
+    {% if purchase.status == 'posted' %}
+        <div class="alert alert-error" style="background: #f8d7da; color: #721c24; padding: 12px; border-radius: 8px; margin: 15px 0;">
+            ⚠️ تحذير: هذه الفاتورة مرحلة ولا يمكن حذفها.
+        </div>
+        <div class="modal-buttons">
+            <a href="{% url 'purchase_list' %}" class="btn btn-secondary">رجوع</a>
+        </div>
+    {% else %}
+        <form method="post">
+            {% csrf_token %}
+            <div class="modal-buttons">
+                <button type="submit" class="btn btn-danger">نعم، حذف</button>
+                <a href="{% url 'purchase_list' %}" class="btn btn-secondary">إلغاء</a>
+            </div>
+        </form>
+    {% endif %}
+</div>
+{% endblock %}

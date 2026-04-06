@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+{% block title %}{{ title }} - نظام الحسابات المصري{% endblock %}
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h2>{{ title }}</h2>
+        <a href="{% url 'cash_list' %}" class="btn btn-secondary">← رجوع</a>
+    </div>
+    
+    <form method="post">
+        {% csrf_token %}
+        
+        <div class="form-row">
+            <div class="form-group">
+                <label>اسم الصندوق *</label>
+                <input type="text" name="name" value="{{ cash.name|default:'' }}" required placeholder="مثال: الصندوق الرئيسي">
+            </div>
+            
+            <div class="form-group">
+                <label>العملة *</label>
+                <select name="currency" required>
+                    <option value="">اختر العملة</option>
+                    {% for curr in currencies %}
+                    <option value="{{ curr.id }}" {% if cash.currency_id == curr.id %}selected{% endif %}>{{ curr.code }} - {{ curr.name_ar }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+        
+        <div class="form-group">
+            <label>الرصيد الافتتاحي</label>
+            <input type="number" name="opening_balance" step="0.01" value="{{ cash.opening_balance|default:0 }}">
+            <small style="color: #666;">الرصيد عند بداية استخدام النظام</small>
+        </div>
+        
+        <div class="form-group">
+            <label>ملاحظات</label>
+            <textarea name="notes" rows="3" placeholder="ملاحظات إضافية">{{ cash.notes|default:'' }}</textarea>
+        </div>
+        
+        <div class="modal-buttons">
+            <button type="submit" class="btn btn-primary">حفظ</button>
+            <a href="{% url 'cash_list' %}" class="btn btn-secondary">إلغاء</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

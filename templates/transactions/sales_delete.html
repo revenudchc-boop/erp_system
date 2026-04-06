@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% block title %}حذف فاتورة مبيعات - نظام الحسابات المصري{% endblock %}
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h2>🗑️ حذف فاتورة مبيعات</h2>
+        <a href="{% url 'sales_list' %}" class="btn btn-secondary">← رجوع</a>
+    </div>
+    
+    <p>هل أنت متأكد من حذف فاتورة المبيعات <strong>{{ sale.invoice_number }}</strong>؟</p>
+    <p><strong>العميل:</strong> {{ sale.customer.name }}</p>
+    <p><strong>التاريخ:</strong> {{ sale.date|date:"Y-m-d" }}</p>
+    
+    {% if sale.status == 'posted' %}
+        <div class="alert alert-error" style="background: #f8d7da; color: #721c24; padding: 12px; border-radius: 8px; margin: 15px 0;">
+            ⚠️ تحذير: هذه الفاتورة مرحلة ولا يمكن حذفها.
+        </div>
+        <div class="modal-buttons">
+            <a href="{% url 'sales_list' %}" class="btn btn-secondary">رجوع</a>
+        </div>
+    {% else %}
+        <form method="post">
+            {% csrf_token %}
+            <div class="modal-buttons">
+                <button type="submit" class="btn btn-danger">نعم، حذف</button>
+                <a href="{% url 'sales_list' %}" class="btn btn-secondary">إلغاء</a>
+            </div>
+        </form>
+    {% endif %}
+</div>
+{% endblock %}

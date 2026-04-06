@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% block title %}حذف مركز تكلفة - نظام الحسابات المصري{% endblock %}
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h2>🗑️ حذف مركز تكلفة</h2>
+        <a href="{% url 'cost_centers_list' %}" class="btn btn-secondary">← رجوع</a>
+    </div>
+    
+    <p>هل أنت متأكد من حذف مركز التكلفة <strong>{{ center.code }} - {{ center.name }}</strong>؟</p>
+    
+    {% if center.children.exists %}
+        <div class="alert alert-error" style="background: #f8d7da; color: #721c24; padding: 12px; border-radius: 8px; margin: 15px 0;">
+            ⚠️ تحذير: هذا المركز يحتوي على مراكز فرعية، لا يمكن حذفه.
+        </div>
+        <a href="{% url 'cost_centers_list' %}" class="btn btn-secondary">رجوع</a>
+    {% else %}
+        <form method="post">
+            {% csrf_token %}
+            <div class="modal-buttons">
+                <button type="submit" class="btn btn-danger">نعم، حذف</button>
+                <a href="{% url 'cost_centers_list' %}" class="btn btn-secondary">إلغاء</a>
+            </div>
+        </form>
+    {% endif %}
+</div>
+{% endblock %}

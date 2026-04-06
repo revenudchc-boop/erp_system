@@ -1,0 +1,155 @@
+{% extends 'base.html' %}
+{% block title %}{{ title }} - نظام الحسابات المصري{% endblock %}
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h2>{{ title }}</h2>
+        <a href="{% url 'allocation_rules_list' %}" class="btn btn-secondary">← رجوع</a>
+    </div>
+    
+    <form method="post" id="rule-form">
+        {% csrf_token %}
+        
+        <div class="form-group">
+            <label>اسم القاعدة *</label>
+            <input type="text" name="name" value="{{ rule.name|default:'' }}" required placeholder="مثال: توزيع الإيجار">
+        </div>
+        
+        <div class="form-group">
+            <label>الوصف</label>
+            <textarea name="description" rows="2" placeholder="وصف القاعدة">{{ rule.description|default:'' }}</textarea>
+        </div>
+        
+        <div class="form-row">
+            <div class="form-group">
+                <label>نوع المصدر *</label>
+                <select name="source_type" id="source_type">
+                    <option value="account" {% if rule.source_type == 'account' %}selected{% endif %}>حساب محاسبي</option>
+                    <option value="cost_element" {% if rule.source_type == 'cost_element' %}selected{% endif %}>عنصر تكلفة</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label>المصدر *</label>
+                <select name="source_id" id="source_id" required>
+                    <option value="">اختر المصدر</option>
+                    {% if rule.source_type == 'account' %}
+                        {% for acc in accounts %}
+                        <option value="{{ acc.id }}" {% if rule.source_id == acc.id %}selected{% endif %}>{{ acc.code }} - {{ acc.name }}</option>
+                        {% endfor %}
+                    {% endif %}
+                </select>
+            </div>
+        </div>
+        
+        <div class="form-row">
+            <div class="form-group">
+                <label>طريقة التوزيع *</label>
+                <select name="method">
+                    <option value="percentage" {% if rule.method == 'percentage' %}selected{% endif %}>نسبة مئوية</option>
+                    <option value="fixed" {% if rule.method == 'fixed' %}selected{% endif %}>قيمة ثابتة</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label>الدورية</label>
+                <select name="frequency">
+                    <option value="monthly" {% if rule.frequency == 'monthly' %}selected{% endif %}>شهري</option>
+                    <option value="quarterly" {% if rule.frequency == 'quarterly' %}selected{% endif %}>ربع سنوي</option>
+                    <option value="yearly" {% if rule.frequency == 'yearly' %}selected{% endif %}>سنوي</option>
+                    <option value="one_time" {% if rule.frequency == 'one_time' %}selected{% endif %}>مرة واحدة</option>
+                </select>
+            </div>
+        </div>
+        
+        <div class="form-row">
+            <div class="form-group">
+                <label>صالح من</label>
+                <input type="date" name="valid_from" value="{{ rule.valid_from|date:'Y-m-d'|default:'' }}">
+            </div>
+            
+            <div class="form-group">
+                <label>صالح إلى</label>
+                <input type="date" name="valid_to" value="{{ rule.valid_to|date:'Y-m-d'|default:'' }}">
+            </div>
+        </div>
+        
+        <h4 style="margin-top: 25px;">مراكز التكلفة المستهدفة</h4>
+        <div id="targets-container">
+            {% if targets %}
+                {% for target in targets %}
+                <div class="target-row" style="display: grid; grid-template-columns: 2fr 1fr auto; gap: 10px; margin-bottom: 10px;">
+                    <select name="target_center[]" required>
+                        <option value="">اختر مركز التكلفة</option>
+                        {% for center in cost_centers %}
+                        <option value="{{ center.id }}" {% if target.cost_center_id == center.id %}selected{% endif %}>{{ center.code }} - {{ center.name }}</option>
+                        {% endfor %}
+                    </select>
+                    <input type="number" name="target_value[]" step="0.000001" value="{{ target.allocation_value }}" placeholder="قيمة التوزيع" required>
+                    <button type="button" class="btn-remove-target" onclick="this.parentElement.remove()" style="background: #dc3545; color: white; border: none; width: 32px; height: 32px; border-radius: 6px; cursor: pointer;">✖</button>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="target-row" style="display: grid; grid-template-columns: 2fr 1fr auto; gap: 10px; margin-bottom: 10px;">
+                    <select name="target_center[]" required>
+                        <option value="">اختر مركز التكلفة</option>
+                        {% for center in cost_centers %}
+                        <option value="{{ center.id }}">{{ center.code }} - {{ center.name }}</option>
+                        {% endfor %}
+                    </select>
+                    <input type="number" name="target_value[]" step="0.000001" placeholder="قيمة التوزيع" required>
+                    <button type="button" class="btn-remove-target" onclick="this.parentElement.remove()" style="background: #dc3545; color: white; border: none; width: 32px; height: 32px; border-radius: 6px; cursor: pointer;">✖</button>
+                </div>
+            {% endif %}
+        </div>
+        
+        <button type="button" onclick="addTarget()" style="background: #28a745; color: white; border: none; padding: 8px 20px; border-radius: 6px; cursor: pointer; margin: 10px 0;">+ إضافة مركز تكلفة</button>
+        
+        <div class="modal-buttons">
+            <button type="submit" class="btn btn-primary">حفظ</button>
+            <a href="{% url 'allocation_rules_list' %}" class="btn btn-secondary">إلغاء</a>
+        </div>
+    </form>
+</div>
+
+<script>
+function addTarget() {
+    const container = document.getElementById('targets-container');
+    const targetDiv = document.createElement('div');
+    targetDiv.className = 'target-row';
+    targetDiv.style.display = 'grid';
+    targetDiv.style.gridTemplateColumns = '2fr 1fr auto';
+    targetDiv.style.gap = '10px';
+    targetDiv.style.marginBottom = '10px';
+    
+    let options = '<option value="">اختر مركز التكلفة</option>';
+    {% for center in cost_centers %}
+    options += '<option value="{{ center.id }}">{{ center.code }} - {{ center.name }}</option>';
+    {% endfor %}
+    
+    targetDiv.innerHTML = `
+        <select name="target_center[]" required>${options}</select>
+        <input type="number" name="target_value[]" step="0.000001" placeholder="قيمة التوزيع" required>
+        <button type="button" class="btn-remove-target" onclick="this.parentElement.remove()" style="background: #dc3545; color: white; border: none; width: 32px; height: 32px; border-radius: 6px; cursor: pointer;">✖</button>
+    `;
+    container.appendChild(targetDiv);
+}
+
+// تغيير خيارات المصدر عند تغيير نوع المصدر
+document.getElementById('source_type').addEventListener('change', function() {
+    const sourceType = this.value;
+    const sourceSelect = document.getElementById('source_id');
+    sourceSelect.innerHTML = '<option value="">اختر المصدر</option>';
+    
+    if (sourceType === 'account') {
+        {% for acc in accounts %}
+        sourceSelect.innerHTML += '<option value="{{ acc.id }}">{{ acc.code }} - {{ acc.name }}</option>';
+        {% endfor %}
+    } else if (sourceType === 'cost_element') {
+        {% for elem in cost_elements %}
+        sourceSelect.innerHTML += '<option value="{{ elem.id }}">{{ elem.code }} - {{ elem.name }}</option>';
+        {% endfor %}
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <title>طباعة القيد المحاسبي</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding: 20px;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #333;
+            padding-bottom: 10px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        .info {
+            margin-bottom: 20px;
+        }
+        .info p {
+            margin: 5px 0;
+        }
+        @media print {
+            body {
+                margin: 0;
+                padding: 0;
+            }
+            .no-print {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h2>نظام الحسابات المصري</h2>
+        <h3>معاينة القيد المحاسبي</h3>
+    </div>
+    
+    <div class="info">
+        <p><strong>التاريخ:</strong> {{ entry.date|date:"Y-m-d" }}</p>
+        <p><strong>البيان:</strong> {{ entry.description }}</p>
+        <p><strong>المرجع:</strong> {{ entry.reference|default:"-" }}</p>
+        <p><strong>حالة القيد:</strong> {% if entry.is_posted %}مرحل{% else %}مسودة{% endif %}</p>
+    </div>
+    
+    <table>
+        <thead>
+            <tr>
+                <th>رقم الحساب</th>
+                <th>اسم الحساب</th>
+                <th>مدين</th>
+                <th>دائن</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for line in lines %}
+            <tr>
+                <td>{{ line.account.code }}</td>
+                <td>{{ line.account.name }}</td>
+                <td>{{ line.debit|floatformat:2 }}</td>
+                <td>{{ line.credit|floatformat:2 }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    
+    <div class="no-print" style="text-align: center; margin-top: 30px;">
+        <button onclick="window.print()">🖨️ طباعة</button>
+        <button onclick="window.close()">إغلاق</button>
+    </div>
+</body>
+</html>

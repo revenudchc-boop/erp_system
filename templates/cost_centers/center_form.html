@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+{% block title %}{{ title }} - نظام الحسابات المصري{% endblock %}
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h2>{{ title }}</h2>
+        <a href="{% url 'cost_centers_list' %}" class="btn btn-secondary">← رجوع</a>
+    </div>
+    
+    <form method="post">
+        {% csrf_token %}
+        
+        <div class="form-row">
+            <div class="form-group">
+                <label>كود المركز *</label>
+                <input type="text" name="code" value="{{ center.code|default:'' }}" required placeholder="مثال: CC001">
+            </div>
+            
+            <div class="form-group">
+                <label>اسم المركز *</label>
+                <input type="text" name="name" value="{{ center.name|default:'' }}" required placeholder="مثال: قسم المبيعات">
+            </div>
+        </div>
+        
+        <div class="form-row">
+            <div class="form-group">
+                <label>نوع المركز</label>
+                <select name="type">
+                    <option value="operational" {% if center.type == 'operational' %}selected{% endif %}>تشغيلي</option>
+                    <option value="support" {% if center.type == 'support' %}selected{% endif %}>دعم</option>
+                    <option value="investment" {% if center.type == 'investment' %}selected{% endif %}>استثماري</option>
+                    <option value="project" {% if center.type == 'project' %}selected{% endif %}>مشروع</option>
+                    <option value="department" {% if center.type == 'department' %}selected{% endif %}>قسم</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label>الميزانية</label>
+                <input type="number" name="budget" step="0.01" value="{{ center.budget|default:0 }}">
+            </div>
+        </div>
+        
+        <div class="form-row">
+            <div class="form-group">
+                <label>المسؤول</label>
+                <input type="text" name="manager" value="{{ center.manager|default:'' }}" placeholder="اسم المسؤول عن المركز">
+            </div>
+            
+            <div class="form-group">
+                <label>المركز الأب</label>
+                <select name="parent">
+                    <option value="">-- بدون أب (مركز رئيسي) --</option>
+                    {% for parent in parents %}
+                    <option value="{{ parent.id }}" {% if center.parent_id == parent.id %}selected{% endif %}>{{ parent.code }} - {{ parent.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+        
+        <div class="form-group">
+            <label>ملاحظات</label>
+            <textarea name="notes" rows="3" placeholder="ملاحظات إضافية">{{ center.notes|default:'' }}</textarea>
+        </div>
+        
+        <div class="modal-buttons">
+            <button type="submit" class="btn btn-primary">حفظ</button>
+            <a href="{% url 'cost_centers_list' %}" class="btn btn-secondary">إلغاء</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

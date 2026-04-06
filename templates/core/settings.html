@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+{% block title %}إعدادات الشركة - نظام الحسابات المصري{% endblock %}
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h2>🏭 إعدادات الشركة</h2>
+    </div>
+    
+    <form method="post">
+        {% csrf_token %}
+        
+        <div class="form-group">
+            <label>نوع الشركة *</label>
+            <select name="company_type" class="form-control" required>
+                <option value="trading" {% if settings.company_type == 'trading' %}selected{% endif %}>
+                    🏪 شركة تجارية (بيع وشراء السلع)
+                </option>
+                <option value="industrial" {% if settings.company_type == 'industrial' %}selected{% endif %}>
+                    🏭 شركة صناعية/خدمية (مواد خام + خدمات)
+                </option>
+            </select>
+            <small class="text-muted">
+                {% if settings.company_type == 'trading' %}
+                    ⚙️ الوضع التجاري: المبيعات تؤثر على المخزون (COGS)
+                {% else %}
+                    ⚙️ الوضع الصناعي: المبيعات لا تؤثر على المخزون، المواد الخام تصرف للاستخدام
+                {% endif %}
+            </small>
+        </div>
+        
+        <div class="form-group">
+            <label>اسم الشركة</label>
+            <input type="text" name="company_name" value="{{ settings.company_name }}" class="form-control">
+        </div>
+        
+        <div class="form-group">
+            <label>الرقم الضريبي</label>
+            <input type="text" name="tax_number" value="{{ settings.tax_number }}" class="form-control">
+        </div>
+        
+        <div class="modal-buttons">
+            <button type="submit" class="btn btn-primary">💾 حفظ الإعدادات</button>
+            <a href="{% url 'dashboard' %}" class="btn btn-secondary">إلغاء</a>
+        </div>
+    </form>
+    
+    <hr>
+    
+    <div class="info-box" style="background: #e3f2fd; padding: 15px; border-radius: 8px; margin-top: 20px;">
+        <h4>📌 تأثير نوع الشركة على النظام:</h4>
+        <ul>
+            <li><strong>شركة تجارية:</strong> عند بيع سلعة، يتم خصمها من المخزون وحساب تكلفة المبيعات (COGS)</li>
+            <li><strong>شركة صناعية/خدمية:</strong> المبيعات لا تؤثر على المخزون، المواد الخام تُصرف عبر أذون صرف</li>
+        </ul>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+{% block title %}{{ title }} - نظام الحسابات المصري{% endblock %}
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h2>{{ title }}</h2>
+        <a href="{% url 'services_list' %}" class="btn btn-secondary">← رجوع</a>
+    </div>
+    
+    <form method="post">
+        {% csrf_token %}
+        
+        <div class="form-row">
+            <div class="form-group">
+                <label>كود الخدمة *</label>
+                <input type="text" name="code" value="{{ service.code|default:'' }}" required placeholder="مثال: S001">
+            </div>
+        </div>
+        
+        <div class="form-row">
+            <div class="form-group">
+                <label>اسم الخدمة بالعربية *</label>
+                <input type="text" name="name_ar" value="{{ service.name_ar|default:'' }}" required placeholder="مثال: صيانة أجهزة">
+            </div>
+            <div class="form-group">
+                <label>اسم الخدمة بالإنجليزية</label>
+                <input type="text" name="name_en" value="{{ service.name_en|default:'' }}" placeholder="مثال: Device Maintenance">
+            </div>
+        </div>
+        
+        <div class="form-row">
+            <div class="form-group">
+                <label>وحدة القياس</label>
+                <input type="text" name="unit" value="{{ service.unit|default:'خدمة' }}" placeholder="مثال: ساعة، يوم، خدمة">
+            </div>
+            <div class="form-group">
+                <label>سعر البيع</label>
+                <input type="number" name="selling_price" step="0.01" value="{{ service.selling_price|default:0 }}">
+            </div>
+        </div>
+        
+        <div class="form-row">
+            <div class="form-group">
+                <label>نسبة الضريبة (%)</label>
+                <input type="number" name="vat_rate" step="0.01" value="{{ service.vat_rate|default:14 }}">
+            </div>
+        </div>
+        
+        <!-- حقل اختيار حساب الإيرادات -->
+        <div class="form-group">
+            <label>💰 حساب الإيرادات</label>
+            <select name="revenue_account" class="form-control">
+                <option value="">-- اختر حساب الإيرادات --</option>
+                {% for account in revenue_accounts %}
+                <option value="{{ account.id }}" {% if service.revenue_account_id == account.id %}selected{% endif %}>
+                    {{ account.code }} - {{ account.name }}
+                </option>
+                {% endfor %}
+            </select>
+            <small class="text-muted">اختر حساب الإيرادات المناسب لهذه الخدمة (مثل: إيرادات خدمات، إيرادات متنوعة، إلخ)</small>
+        </div>
+        
+        <div class="form-group">
+            <label>ملاحظات</label>
+            <textarea name="notes" rows="3" placeholder="ملاحظات إضافية">{{ service.notes|default:'' }}</textarea>
+        </div>
+        
+        <div class="modal-buttons">
+            <button type="submit" class="btn btn-primary">حفظ</button>
+            <a href="{% url 'services_list' %}" class="btn btn-secondary">إلغاء</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

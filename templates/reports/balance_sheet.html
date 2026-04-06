@@ -1,0 +1,132 @@
+{% extends 'base.html' %}
+{% block title %}قائمة المركز المالي - نظام الحسابات المصري{% endblock %}
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h2>⚖️ قائمة المركز المالي</h2>
+        <a href="{% url 'reports_dashboard' %}" class="btn btn-secondary">← رجوع للتقارير</a>
+    </div>
+    
+    <div style="margin-bottom: 20px; text-align: center;">
+        <p><strong>في تاريخ:</strong> {{ as_of_date }}</p>
+    </div>
+    
+    <div class="row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+        <div class="col">
+            <h3 style="color: #1e3c72;">الأصول</h3>
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>رقم الحساب</th>
+                            <th>اسم الحساب</th>
+                            <th>الرصيد (جنيه)</th>
+                         </thead>
+                    <tbody>
+                        {% for item in assets %}
+                         <tr>
+                             <td>{{ item.code }}</td>
+                             <td>{{ item.name }}</td>
+                             <td style="text-align: left;">{{ item.amount|floatformat:2 }}</td>
+                         </tr>
+                        {% empty %}
+                         <tr><td colspan="3">لا توجد أصول</td></tr>
+                        {% endfor %}
+                        <tr style="background: #f8f9fa; font-weight: bold;">
+                            <td colspan="2">إجمالي الأصول</td>
+                            <td style="text-align: left;">{{ assets_total|floatformat:2 }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <div class="col">
+            <h3 style="color: #dc3545;">الخصوم</h3>
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                         <tr>
+                            <th>رقم الحساب</th>
+                            <th>اسم الحساب</th>
+                            <th>الرصيد (جنيه)</th>
+                         </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in liabilities %}
+                         <tr>
+                             <td>{{ item.code }}</td>
+                             <td>{{ item.name }}</td>
+                             <td style="text-align: left;">{{ item.amount|floatformat:2 }}</td>
+                         </tr>
+                        {% empty %}
+                         <tr><td colspan="3">لا توجد خصوم</td></tr>
+                        {% endfor %}
+                        <tr style="background: #f8f9fa; font-weight: bold;">
+                            <td colspan="2">إجمالي الخصوم</td>
+                            <td style="text-align: left;">{{ liabilities_total|floatformat:2 }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <h3 style="color: #28a745; margin-top: 20px;">حقوق الملكية</h3>
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                         <tr>
+                            <th>رقم الحساب</th>
+                            <th>اسم الحساب</th>
+                            <th>الرصيد (جنيه)</th>
+                         </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in equities %}
+                         <tr>
+                             <td>{{ item.code }}</td>
+                             <td>{{ item.name }}</td>
+                             <td style="text-align: left;">{{ item.amount|floatformat:2 }}</td>
+                         </tr>
+                        {% empty %}
+                         <tr><td colspan="3">لا توجد حقوق ملكية</td></tr>
+                        {% endfor %}
+                        <tr style="background: #f8f9fa; font-weight: bold;">
+                            <td colspan="2">إجمالي حقوق الملكية</td>
+                            <td style="text-align: left;">{{ equities_total|floatformat:2 }}</td>
+                        </tr>
+                        <tr style="background: #e9ecef; font-weight: bold;">
+                            <td colspan="2">إجمالي الخصوم وحقوق الملكية</td>
+                            <td style="text-align: left;">{{ total_liabilities_equity|floatformat:2 }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <div style="margin-top: 20px; text-align: center;">
+        <button onclick="window.print()" class="btn btn-primary">🖨️ طباعة التقرير</button>
+    </div>
+</div>
+
+<style>
+    @media print {
+        .sidebar, .header, .card-header a, .btn, .footer {
+            display: none;
+        }
+        .card {
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            background: white;
+        }
+        .row {
+            display: block !important;
+        }
+        .col {
+            width: 100% !important;
+        }
+    }
+</style>
+{% endblock %}

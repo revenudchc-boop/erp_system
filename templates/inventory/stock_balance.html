@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% block title %}أرصدة المخزون - نظام الحسابات المصري{% endblock %}
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h2>📦 أرصدة المخزون</h2>
+    </div>
+    
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>الصنف</th>
+                    <th>المستودع</th>
+                    <th>الكمية</th>
+                    <th>متوسط التكلفة</th>
+                    <th>القيمة الإجمالية</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for balance in balances %}
+                <tr>
+                    <td><strong>{{ balance.product.code }}</strong> - {{ balance.product.name_ar }}</td>
+                    <td>{{ balance.warehouse.name }}</td>
+                    <td>{{ balance.quantity|floatformat:2 }}</td>
+                    <td>{{ balance.avg_cost|floatformat:2 }}</td>
+                    <td>{{ balance.quantity|floatformat:2|add:balance.avg_cost|floatformat:2 }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" style="text-align: center;">لا توجد أرصدة مخزنية</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+{% block title %}{{ title }} - نظام الحسابات المصري{% endblock %}
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h2>{{ title }}</h2>
+        <a href="{% url 'cost_elements_list' %}" class="btn btn-secondary">← رجوع</a>
+    </div>
+    
+    <form method="post">
+        {% csrf_token %}
+        
+        <div class="form-row">
+            <div class="form-group">
+                <label>كود العنصر *</label>
+                <input type="text" name="code" value="{{ element.code|default:'' }}" required placeholder="مثال: CE001">
+            </div>
+            
+            <div class="form-group">
+                <label>اسم العنصر *</label>
+                <input type="text" name="name" value="{{ element.name|default:'' }}" required placeholder="مثال: مواد خام">
+            </div>
+        </div>
+        
+        <div class="form-row">
+            <div class="form-group">
+                <label>نوع العنصر</label>
+                <select name="type">
+                    <option value="direct_material" {% if element.type == 'direct_material' %}selected{% endif %}>مواد مباشرة</option>
+                    <option value="direct_labor" {% if element.type == 'direct_labor' %}selected{% endif %}>أجور مباشرة</option>
+                    <option value="indirect_material" {% if element.type == 'indirect_material' %}selected{% endif %}>مواد غير مباشرة</option>
+                    <option value="indirect_labor" {% if element.type == 'indirect_labor' %}selected{% endif %}>أجور غير مباشرة</option>
+                    <option value="depreciation" {% if element.type == 'depreciation' %}selected{% endif %}>إهلاك</option>
+                    <option value="rent" {% if element.type == 'rent' %}selected{% endif %}>إيجار</option>
+                    <option value="utilities" {% if element.type == 'utilities' %}selected{% endif %}>مرافق</option>
+                    <option value="other" {% if element.type == 'other' %}selected{% endif %}>أخرى</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label>الحساب المحاسبي المرتبط</label>
+                <select name="account">
+                    <option value="">-- بدون حساب --</option>
+                    {% for acc in accounts %}
+                    <option value="{{ acc.id }}" {% if element.account_id == acc.id %}selected{% endif %}>{{ acc.code }} - {{ acc.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+        
+        <div class="form-group">
+            <label>ملاحظات</label>
+            <textarea name="notes" rows="3" placeholder="ملاحظات إضافية">{{ element.notes|default:'' }}</textarea>
+        </div>
+        
+        <div class="modal-buttons">
+            <button type="submit" class="btn btn-primary">حفظ</button>
+            <a href="{% url 'cost_elements_list' %}" class="btn btn-secondary">إلغاء</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

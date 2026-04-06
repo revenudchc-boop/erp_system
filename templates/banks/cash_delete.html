@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% block title %}حذف صندوق - نظام الحسابات المصري{% endblock %}
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h2>🗑️ حذف صندوق</h2>
+        <a href="{% url 'cash_list' %}" class="btn btn-secondary">← رجوع</a>
+    </div>
+    
+    <p>هل أنت متأكد من حذف الصندوق <strong>{{ cash.name }}</strong>؟</p>
+    
+    {% if cash.current_balance != 0 %}
+        <div class="alert alert-error" style="background: #f8d7da; color: #721c24; padding: 12px; border-radius: 8px; margin: 15px 0;">
+            ⚠️ تحذير: هذا الصندوق لديه رصيد ({{ cash.current_balance|floatformat:2 }}) لا يمكن حذفه قبل تسوية الرصيد.
+        </div>
+        <a href="{% url 'cash_list' %}" class="btn btn-secondary">رجوع</a>
+    {% else %}
+        <form method="post">
+            {% csrf_token %}
+            <div class="modal-buttons">
+                <button type="submit" class="btn btn-danger">نعم، حذف</button>
+                <a href="{% url 'cash_list' %}" class="btn btn-secondary">إلغاء</a>
+            </div>
+        </form>
+    {% endif %}
+</div>
+{% endblock %}
